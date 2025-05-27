@@ -1,537 +1,197 @@
-const fs = require("fs");
+const fs = require("fs-extra");
 const path = require("path");
 const axios = require("axios");
 
-const pathApi = path.join(__dirname, "../../includes/datajson/");
+const DATA_FOLDER = path.join(__dirname, "../../lekhanh/datajson/");
+const DOWNLOAD_FOLDER = path.join(__dirname, "../../lekhanh/datajson/");
 
-module.exports.config = {
+exports.config = {
   name: "api",
-  version: "1.0.0",
-  hasPermssion: 2,
-  credits: "Vtuan",
-  description: "no",
+  version: "0.0.9",
+  hasPermission: 0,
+  credits: "Harin",
+  description: "",
   commandCategory: "Admin",
-  usages: "[]",
-  cooldowns: 1,
-  usePrefix: false,
+  usages: "",
+  cooldowns: 5,
+  dependencies: ""
 };
 
-const CL = (filePath) =>
-  fs.readFileSync(filePath, "utf-8").split(/\r\n|\r|\n/).length;
+exports.run = async function (_) {
+  const command = _.args[0];
 
-module.exports.run = async function ({ api, event, args }) {
+  if (_.event.senderID != 61565047375172) {
+    return _.api.sendMessage("Xin lỗi! Lệnh này chỉ admin mới dùng được.", _.event.threadID);
+  }
+
+  switch (command) {
+    case "list":
+      return await exports.getJsonList(_);
+    case "add":
+      return await exports.addUrlToJson(_);
+    case "get":
+      return _.api.sendMessage("Vui lòng reply để sử dụng lệnh 'get'.", _.event.threadID);
+    case "del":
+      return _.api.sendMessage("Vui lòng reply để sử dụng lệnh 'del'.", _.event.threadID);
+    default:
+      return _.api.sendMessage("Lệnh không hợp lệ.", _.event.threadID);
+  }
+};
+
+exports.handlerReply = async function (_, reply) {
+  const [action, index] = reply.split(" ");
+
+  if (!index || isNaN(index)) {
+    return _.api.sendMessage("❌ Vui lòng cung cấp số thứ tự hợp lệ.", _.event.threadID);
+  }
+
+  switch (action.toLowerCase()) {
+    case "get":
+      return await exports.getRandomVideoUrl(_, _.args[index - 1]);
+    case "del":
+      return await exports.deleteJsonFile(_, index);
+    default:
+      return _.api.sendMessage("❌ Lệnh không hợp lệ. Vui lòng sử dụng 'get' hoặc 'del' với số thứ tự.", _.event.threadID);
+  }
+};
+
+exports.getJsonList = async function (_) {
   try {
-    if (args.length > 0) {
-      const subCommand = args[0].toLowerCase();
-
-      if (subCommand === "add") {
-        api.setMessageReaction("⌛", event.messageID, () => { }, true);
-        let msg = "";
-        const replyMessage = event.messageReply;
-        let fileName = "api.json";
-
-        if (!replyMessage) {
-          return api.sendMessage(
-            `Vui lòng reply ảnh hoặc video + tên file api hoặc để trống để lưu vào file ${fileName}`,
-            event.threadID,
-          );
-        }
-        if (args.length > 1) {
-          fileName = args.slice(1).join("_") + ".json";
-        }
-        const filePath = pathApi + fileName;
-
-        if (!fs.existsSync(filePath)) {
-          fs.writeFileSync(filePath, "[]", "utf-8");
-        }
-
-        for (let i of replyMessage.attachments) {
-          await axios
-            .get(
-              `https://catbox-mnib.onrender.com/upload?url=${encodeURIComponent(
-                i.url
-              )}`
-            )
-            .then(async ($) => {
-              msg += `${$.data.url}\n`;
-            });
-           //api.sendMessage('✅Thêm thành công',event.threadID)
-        
-        }
-
-        let existingData = [];
-
-        try {
-          const fileContent = fs.readFileSync(filePath, "utf-8");
-          existingData = JSON.parse(fileContent);
-        } catch (error) {
-          console.error("Error reading JSON file:", error);
-        }
-
-        existingData = existingData.concat(msg.split("\n").filter(Boolean));
-
-        fs.writeFileSync(
-          filePath,
-          JSON.stringify(existingData, null, 2),
-          "utf-8"
-        );
-        api.setMessageReaction("✅", event.messageID, () => { }, true);
-
-        return api.sendMessage("✅Thêm thành công", event.threadID);
-      } else if (subCommand === "cr") {
-        if (args.length === 1) {
-          api.setMessageReaction("❎", event.messageID, () => { }, true);
-          return api.sendMessage(
-            `🦑 Bạn cần nhập tên file để tạo!`,
-            event.threadID
-          );
-        }
-
-        let fileName = args.slice(1).join("_") + ".json";
-        const filePath = pathApi + fileName;
-
-        if (!fs.existsSync(filePath)) {
-          fs.writeFileSync(filePath, "[]", "utf-8");
-          api.setMessageReaction("✅", event.messageID, () => { }, true);
-          return api.sendMessage(`➣ Đã tạo file ${fileName}`, event.threadID);
-        } else {
-          return api.sendMessage(
-            `👉 File ${fileName} đã tồn tại`,
-            event.threadID
-          );
-        }
-      } else if (subCommand === "rm") {
-        if (args.length === 1) {
-          api.setMessageReaction("❎", event.messageID, () => { }, true);
-          return api.sendMessage(
-            `👉 Bạn cần nhập tên file để xóa!`,
-            event.threadID
-          );
-        }
-
-        let fileName = args.slice(1).join("_") + ".json";
-        const filePath = pathApi + fileName;
-
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-          api.setMessageReaction("✅", event.messageID, () => { }, true);
-          return api.sendMessage(`👊 Đã xóa file ${fileName}`, event.threadID);
-        } else {
-          api.setMessageReaction("❎", event.messageID, () => { }, true);
-          return api.sendMessage(
-            `❎ File ${fileName}.json không tồn tại`,
-            event.threadID
-          );
-        }
-      } else if (subCommand === "gf") {
-        if (args.length === 1) {
-          api.setMessageReaction("❎", event.messageID, () => { }, true);
-          return api.sendMessage(
-            `🦑 Bạn cần nhập tên file để share!`,
-            event.threadID
-          );
-      }
-
-        const fileName = args[1].toLowerCase() + ".json";
-        const filePath = pathApi + fileName;
-        if (fs.existsSync(filePath)) {
-          try {
-            const fileContent = fs.readFileSync(filePath, "utf-8");
-
-            const response = await axios.post(
-              "https://api.mocky.io/api/mock",
-              {
-                status: 200,
-                content: fileContent,
-                content_type: "application/json",
-                charset: "UTF-8",
-                secret: "NguyenMinhHuy",
-                expiration: "never",
-              }
-            );
-            api.setMessageReaction("✅", event.messageID, () => { }, true);
-            return api.sendMessage(
-              `📥 ${fileName}: ${response.data.link}`,
-              event.threadID
-            );
-          } catch (error) {
-            console.error(`Error processing file ${fileName}:`, error);
-            api.setMessageReaction("❎", event.messageID, () => { }, true);
-            return api.sendMessage(
-              `Đã xảy ra lỗi trong quá trình xử lý file ${fileName}`,
-              event.threadID
-            );
-          }
-        } else {
-          api.setMessageReaction("❎", event.messageID, () => { }, true);
-          console.error(`File ${fileName} không tồn tại`);
-          return api.sendMessage(
-            `📥 File ${fileName} không tồn tại`,
-            event.threadID
-          );
-        }
-      } else if (subCommand === "check") {
-        if (args.length < 2) {
-          const files = fs.readdirSync(pathApi);
-          const jsonFiles = files.filter(
-            (file) => path.extname(file).toLowerCase() === ".json"
-          );
-
-          if (jsonFiles.length > 0) {
-            const fileListArray = jsonFiles.map((file, index) => ({
-              index: index + 1,
-              fileName: path.basename(file, ".json"),
-              filePath: pathApi + file,
-              lineCount: CL(pathApi + file),
-            }));
-
-            const fileList = fileListArray
-              .map(
-                (item) =>
-                  `${item.index}. ${item.fileName} (${item.lineCount} lines)`
-              )
-              .join("\n");
-              api.setMessageReaction("✅", event.messageID, () => { }, true);
-            const messageInfo = await api.sendMessage(
-              `📒  Danh sách các link api:\n${fileList}\n\nReply tin nhắn này: rm/cr/gf/check + stt`,
-              event.threadID
-            );
-
-            const replyInfo = {
-              name: module.exports.config.name,
-              messageID: messageInfo.messageID,
-              author: event.senderID,
-              fileListArray,
-              type: "list",
-            };
-            global.client.handleReply.push(replyInfo);
-
-            return;
-          } else {
-            return api.sendMessage(`➣ Thư mục rỗng`, event.threadID);
-          }
-        } /*else {
-
-          if (args[1].toLowerCase() === "all") { 
-            console.log(`abcxyz`)
-          }
-          
-          const fileName = args[1].toLowerCase() + ".json";
-          const filePath = pathApi + fileName;
-
-          if (!fs.existsSync(filePath))
-            return api.sendMessage(
-              `File ${fileName} không tồn tại!`,
-              event.threadID
-            );
-          try {
-            const fileContent = fs.readFileSync(filePath, "utf-8");
-            const jsonData = JSON.parse(fileContent);
-
-            const brokenLinks = await Promise.all(
-              jsonData.map(async (link) => {
-                try {
-                  const response = await axios.head(link);
-                  if (response.status === 404) return link;
-                } catch (error) {
-                  //console.error(`Error checking link ${link}:`);
-                  return link;
-                }
-              })
-            );
-
-            const linkk = brokenLinks.filter(Boolean);
-            const sốlinkdie = linkk.length;
-            let msg = ``;
-            if (sốlinkdie === 0) {
-              msg += `⪼ Không có link die`;
-            } else {
-              msg += `<Check Link>\n➣ link die: ${sốlinkdie}\n➣ link sống: ${
-                jsonData.length - sốlinkdie
-              }\n➣ Thả cảm xúc bất kì vào tin nhắn này để xóa link die`;
-            }
-            return api.sendMessage(msg, event.threadID, (error, info) => {
-              if (error) {
-                console.error(error);
-              } else {
-                global.client.handleReaction.push({
-                  name: module.exports.config.name,
-                  messageID: info.messageID,
-                  author: event.senderID,
-                  type: "check",
-                  linkk,
-                  filePath,
-                });
-              }
-            });
-          } catch (error) {
-            // console.error(`Error checking links in file ${fileName}:`, error);
-            return api.sendMessage(
-              `Đã xảy ra lỗi trong quá trình kiểm tra liên kết trong file ${fileName}`,
-              event.threadID
-            );
-          }*/
-        }
-      }
-
-      
-    else {
-      const files = fs.readdirSync(pathApi);
-      const jsonFiles = files.filter(
-        (file) => path.extname(file).toLowerCase() === ".json"
-      );
-      const tong = jsonFiles.length;
-      let tsdong = 0;
-      for (const file of jsonFiles) {
-        const filePath = pathApi + file;
-        tsdong += CL(filePath);
-      }
-      api.setMessageReaction("✅", event.messageID, () => { }, true);
-      const cachsudung = `
-┏━━━━━━━━━━━━━━━━━      
-┃👉 check: xem toàn bộ danh 
-┃                sách api
-┃
-┃👉 check + tên file muốn 
-┃                kiểm tra
-┃
-┃👉 rm + tên file json 
-┃                muốn xóa
-┃
-┃👉 cr + tên file json để
-┃                 tạo file mới
-┃
-┃👉  gf + tên file để share 
-┃           file api
-┃
-┃👉  add:reply ảnh/video
-┃      audio muốn làm api!
-┃   🥕 add + tên file cụ thể
-┃   🥕 add + để trống 
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━              `;
-
-      return api.sendMessage(
-        `
-${cachsudung}
-📊 Tổng số file api hiện có: ${tong}
-📝 Tổng số dòng: ${tsdong}
-👉 Reply tin nhắn này: cr + tên file để tạo file json mới`,
-        event.threadID,
-        async (error, info) => {
-          if (error) {
-            console.error(error);
-          } else {
-            global.client.handleReply.push({
-              name: module.exports.config.name,
-              messageID: info.messageID,
-              author: event.senderID,
-              type: "api",
-            });
-          }
-        }
-      );
+    const files = await getJsonFiles();
+    if (files.length === 0) {
+      return _.api.sendMessage("❌ Không tìm thấy tệp JSON nào.", _.event.threadID);
     }
-  } catch (error) {
-    console.error("Error in run function:", error);
-    api.setMessageReaction("❎", event.messageID, () => { }, true);
-    return api.sendMessage(
-      "Đã xảy ra lỗi trong quá trình xử lý!",
-      event.threadID
+
+    const fileDetails = await Promise.all(files.map(async (file, index) => {
+      const count = await exports.countLinksInFile(file);
+      return `${index + 1}. ${file} - ${count} link${count === 1 ? '' : 's'}`;
+    }));
+
+    const totalLinks = await exports.countTotalLinks(files);
+    _.api.sendMessage(
+      `🗂️ Tổng có ${files.length} file trong kho lưu trữ:\n──────────────────\n${fileDetails.join("\n")}\n──────────────────\n📊 Tổng số link: ${totalLinks}\n📌 Reply:\n- Gửi "del" + STT (ví dụ: del 1) để xóa file.\n- Gửi "get" + STT để xem video từ API.`,
+      _.event.threadID,
+      (error, info) => _.handleReply = { name: "api", messageID: info.messageID }
     );
+  } catch (error) {
+    console.error("Lỗi khi xử lý yêu cầu:", error);
+    _.api.sendMessage("❌ Đã xảy ra lỗi khi xử lý yêu cầu", _.event.threadID);
   }
 };
-module.exports.handleReply = async ({ api, handleReply, event }) => {
+
+exports.addUrlToJson = async function (_) {
+  const fileName = _.args[1];
+  const urls = getUrlsFromText(_.event.messageReply?.body || _.args.slice(2).join(" "));
+
+  if (!fileName || urls.length === 0) {
+    return _.api.sendMessage("❌ Bạn cần cung cấp tên tệp JSON và ít nhất một URL hợp lệ.", _.event.threadID);
+  }
+
+  const filePath = path.join(DATA_FOLDER, `${fileName}.json`);
+
   try {
-    const { threadID, body, messageID } = event;
-    const { fileListArray, type } = handleReply;
-    const args = body.split(" ");
-
-    const getPath = (fileName) => pathApi + fileName + ".json";
-
-    const NVNH = (message) => api.sendMessage(message, threadID);
-
-    if (type === "list") {
-      if (args[0].toLowerCase() === "rm") {
-        const fileIndices = args.slice(1).map((index) => parseInt(index));
-
-        for (const fileIndex of fileIndices) {
-          if (fileIndex >= 1 && fileIndex <= fileListArray.length) {
-            const selectedFile = fileListArray[fileIndex - 1];
-            const filePath = getPath(selectedFile.fileName);
-
-            fs.unlink(filePath, (err) => {
-              if (err) console.error(`Error deleting file ${filePath}:`, err);
-            });
-            api.setMessageReaction("✅", event.messageID, () => { }, true);
-            NVNH(`Đã xóa file ${selectedFile.fileName}`);
-          } else {
-            api.setMessageReaction("❎", event.messageID, () => { }, true);
-            NVNH(`Tên ${fileIndex} không hợp lệ`);
-          }
-        }
-      } else if (args[0].toLowerCase() === "cr") {
-        if (args.length === 1) {
-          api.setMessageReaction("❎", event.messageID, () => { }, true);
-          return NVNH(`📝 Bạn cần nhập tên file để tạo!`);
-        }
-
-        let fileName = args.slice(1).join("_") + ".json";
-        const filePath = getPath(fileName);
-
-        if (!fs.existsSync(filePath)) {
-          fs.writeFileSync(filePath, "[]", "utf-8");
-          api.setMessageReaction("✅", event.messageID, () => { }, true);
-          NVNH(`Đã tạo file ${fileName}`);
-        } else {
-          api.setMessageReaction("❎", event.messageID, () => { }, true);
-          NVNH(`File ${fileName} đã tồn tại`);
-        }
-      } else if (args[0].toLowerCase() === "gf") {
-        const fileIndices = args.slice(1).map((index) => parseInt(index));
-
-        for (const fileIndex of fileIndices) {
-          if (fileIndex >= 1 && fileIndex <= fileListArray.length) {
-            const selectedFile = fileListArray[fileIndex - 1];
-            const filePath = getPath(selectedFile.fileName);
-
-            try {
-              const fileContent = fs.readFileSync(filePath, "utf-8");
-              const response = await axios.post(
-                "https://api.mocky.io/api/mock",
-                {
-                  status: 200,
-                  content: fileContent,
-                  content_type: "application/json",
-                  charset: "UTF-8",
-                  secret: "NguyenMinhHuy",
-                  expiration: "never",
-                },
-              );
-
-              const mockyLink = response.data.link;
-              console.log(mockyLink);
-              api.setMessageReaction("✅", event.messageID, () => { }, true);
-              NVNH(`📥  ${selectedFile.fileName}: ${mockyLink}`);
-            } catch (error) {
-              console.error(
-                "Error posting file content to RunMocky or processing response:",
-                error,
-              );
-              api.setMessageReaction("❎", event.messageID, () => { }, true);
-              NVNH("Đã xảy ra lỗi trong quá trình xử lý!");
-            }
-          } else {
-            api.setMessageReaction("❎", event.messageID, () => { }, true);
-            NVNH(`Tên file ${fileIndex} không có `);
-          }
-        }
-      } else if (args[0].toLowerCase() === "check") {
-        const fileIndices = args.slice(1).map((index) => parseInt(index));
-
-        for (const fileIndex of fileIndices) {
-          if (fileIndex >= 1 && fileIndex <= fileListArray.length) {
-            const selectedFile = fileListArray[fileIndex - 1];
-            const filePath = getPath(selectedFile.fileName);
-            api.setMessageReaction("⌛", event.messageID, () => { }, true);
-            try {
-              const fileContent = fs.readFileSync(filePath, "utf-8");
-              const jsonData = JSON.parse(fileContent);
-
-              const brokenLinks = await Promise.all(
-                jsonData.map(async (link) => {
-                  try {
-                    const response = await axios.head(link);
-                    if (response.status === 404) {
-                      return link;
-                    }
-                  } catch (error) {
-                    //console.error(`Error checking link ${link}:`, error);
-                    return link;
-                  }
-                }),
-              );
-
-              const nn = brokenLinks.filter(Boolean).length;
-              // const numberOfLiveLinks = jsonData.length - nn;
-              /*const message = `Tệp ${selectedFile.fileName} chứa:\n` +
-                    `- Số liên kết die: ${nn}\n` +
-                    `- Số liên kết còn sống: ${numberOfLiveLinks}`;*/
-                    api.setMessageReaction("✅", event.messageID, () => { }, true);
-              const message = `===𝐂𝐡𝐞𝐜𝐤 𝐋𝐢𝐧𝐤===\n➣ 𝐋𝐢𝐧𝐤 𝐝𝐢𝐞: ${nn}\n➣ 𝐋𝐢𝐧𝐤 𝐬𝐨̂́𝐧𝐠: ${jsonData.length - nn}\n➣ Thả cảm xúc bất kì vào tin nhắn này để xóa link die`;
-              api.sendMessage(message, event.threadID, (error, info) => {
-                if (error) {
-                  console.error(error);
-                } else {
-                  global.client.handleReaction.push({
-                    name: module.exports.config.name,
-                    messageID: info.messageID,
-                    author: event.senderID,
-                    type: "check",
-                    linkk: brokenLinks,
-                    filePath,
-                  });
-                }
-              });
-            } catch (error) {
-              console.error(
-                `Error reading or parsing JSON file ${selectedFile.fileName}:`,
-                error,
-              );
-              api.setMessageReaction("❎", event.messageID, () => { }, true);
-              api.sendMessage(
-                `Đã xảy ra lỗi khi đọc hoặc phân tích tệp JSON ${selectedFile.fileName}`,
-                event.threadID,
-              );
-            }
-          } else {
-            api.setMessageReaction("❎", event.messageID, () => { }, true);
-            NVNH(`Index ${fileIndex} không hợp lệ`);
-          }
-        }
-      }
-    } else if (type === "api" && args[0].toLowerCase() === "cr") {
-      if (args.length === 1) {
-        api.setMessageReaction("❎", event.messageID, () => { }, true);
-        return NVNH(`👉  Bạn cần nhập tên file để tạo!`);
-      }
-
-      let fileName = args.slice(1).join("_") + ".json";
-      const filePath = getPath(fileName);
-
-      if (!fs.existsSync(filePath)) {
-        fs.writeFileSync(filePath, "[]", "utf-8");
-        api.setMessageReaction("✅", event.messageID, () => { }, true);
-        NVNH(`✅ Đã tạo file ${fileName}`);
-      } else {
-        api.setMessageReaction("❎", event.messageID, () => { }, true);
-        NVNH(`➣ File ${fileName} đã tồn tại`);
-      }
-    }
+    let data = await readJsonFile(filePath);
+    data.push(...urls);
+    await fs.writeFile(filePath, JSON.stringify(data, null, 4), "utf-8");
+    _.api.sendMessage(`✅ Đã thêm URL vào ${fileName}.json`, _.event.threadID);
   } catch (error) {
-    console.error("Lỗi: ", error);
+    handleError(error, _, _.event.threadID);
   }
 };
-module.exports.handleReaction = async function ({
-  api,
-  event,
-  handleReaction,
-}) {
-  if (event.userID != handleReaction.author) return;
+
+exports.getRandomVideoUrl = async function (_, fileName) {
+  const filePath = path.join(DATA_FOLDER, `${fileName}.json`);
+
   try {
-    const { filePath, linkk } = handleReaction;
+    const data = await readJsonFile(filePath);
+    if (!Array.isArray(data) || data.length === 0) {
+      return _.api.sendMessage("❌ Không tìm thấy URL video nào trong tệp JSON.", _.event.threadID);
+    }
 
-    if (filePath && Array.isArray(linkk) && linkk.length > 0) {
-      let fileContent = fs.readFileSync(filePath, "utf-8");
-      let jsonData = JSON.parse(fileContent);
-      const l = jsonData.length;
-      jsonData = jsonData.filter((link) => !linkk.includes(link));
-      fs.writeFileSync(filePath, JSON.stringify(jsonData, null, 2), "utf-8");
+    const randomUrl = data[Math.floor(Math.random() * data.length)];
+    await exports.downloadAndSendVideo(randomUrl, `video_${fileName}.mp4`, _);
+  } catch (error) {
+    handleError(error, _, _.event.threadID);
+  }
+};
 
-      const d = l - jsonData.length;
-
-      api.sendMessage(`✅ Đã xóa thành công ${d} link die`, event.threadID);
+exports.deleteJsonFile = async function (_, index) {
+  try {
+    const files = await getJsonFiles();
+    if (files.length >= index) {
+      const fileToDelete = path.join(DATA_FOLDER, files[index - 1]);
+      await fs.remove(fileToDelete);
+      _.api.sendMessage(`✅ Đã xóa tệp ${files[index - 1]}.`, _.event.threadID);
+    } else {
+      _.api.sendMessage("❌ Chỉ số không hợp lệ.", _.event.threadID);
     }
   } catch (error) {
-    console.error("Error handling reaction:", error);
+    handleError(error, _, _.event.threadID);
   }
+};
+
+exports.downloadAndSendVideo = async function (url, fileName, _) {
+  try {
+    const filePath = await downloadFile(url, fileName);
+    _.api.sendMessage(
+      { body: "✅ Video đã được tải xuống thành công!", attachment: fs.createReadStream(filePath) },
+      _.event.threadID,
+      () => fs.unlinkSync(filePath)
+    );
+  } catch (error) {
+    handleError(error, _, _.event.threadID);
+  }
+};
+
+// Helper functions
+
+async function getJsonFiles() {
+  const files = await fs.readdir(DATA_FOLDER);
+  return files.filter(file => path.extname(file) === ".json");
+}
+
+async function readJsonFile(filePath) {
+  if (await fs.pathExists(filePath)) {
+    return JSON.parse(await fs.readFile(filePath, "utf-8"));
+  }
+  return [];
+}
+
+async function downloadFile(url, fileName) {
+  const response = await axios({ url, method: "GET", responseType: "stream" });
+  const filePath = path.join(DOWNLOAD_FOLDER, fileName);
+  await fs.ensureDir(path.dirname(filePath));
+  const writer = fs.createWriteStream(filePath);
+  response.data.pipe(writer);
+
+  return new Promise((resolve, reject) => {
+    writer.on("finish", () => resolve(filePath));
+    writer.on("error", reject);
+  });
+}
+
+function getUrlsFromText(text) {
+  const regex = /(https?:\/\/[^\s]+)/g;
+  return text.match(regex) || [];
+}
+
+function handleError(error, _, threadID) {
+  console.error("Lỗi khi xử lý yêu cầu:", error);
+  _.api.sendMessage("❌ Đã xảy ra lỗi khi xử lý yêu cầu", threadID);
+}
+
+exports.countLinksInFile = async function (fileName) {
+  const filePath = path.join(DATA_FOLDER, fileName);
+  try {
+    const data = await readJsonFile(filePath);
+    return Array.isArray(data) ? data.length : 0;
+  } catch (error) {
+    console.error("Lỗi khi đếm liên kết trong tệp:", error);
+    return 0;
+  }
+};
+
+exports.countTotalLinks = async function (files) {
+  const counts = await Promise.all(files.map(file => exports.countLinksInFile(file)));
+  return counts.reduce((acc, count) => acc + count, 0);
 };

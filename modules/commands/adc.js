@@ -6,26 +6,26 @@ module.exports.config = {
     name: "adc",
     version: "1.0.0",
     hasPermssion: 3,
-    credits: "Thjhn",
+    credits: "Thjhn & KyPhan",
     description: "adc mọi loại raw",
     commandCategory: "Admin",
     usages: "[reply or text]",
-    usePrefix: false,
     cooldowns: 0,
+    usePrefix: false,
     dependencies: {
         "cheerio": "",
         "request": ""
     }
 };
 
-module.exports.run = async function ({ api, event, args, Users }) {
+module.exports.run = async function ({ api, event, args }) {
     const { senderID, threadID, messageID, messageReply, type } = event;
     var name = args[0];
     if (type == "message_reply") {
         var text = messageReply.body;
     }
 
-    if (!text && !name) return api.sendMessage('❎ Vui lòng reply link muốn áp dụng code hoặc ghi tên file để up code lên runmocky!', threadID, messageID);
+    if (!text && !name) return api.sendMessage('❎ Vui lòng reply link muốn áp dụng code hoặc ghi tên file để up code lên!', threadID, messageID);
 
     if (!text && name) {
         var data = fs.readFile(
@@ -33,39 +33,29 @@ module.exports.run = async function ({ api, event, args, Users }) {
             "utf-8",
             async (err, data) => {
                 if (err) return api.sendMessage(`❎ Lệnh ${args[0]} không tồn tại`, threadID, messageID);
-
-              
-                async function createMockAPI(name) {
-                    try {
-                        const response = await axios.post("https://api.mocky.io/api/mock", {
-                            status: 200,
-                            content: data,
-                            content_type: "application/json",
-                            charset: "UTF-8",
-                            secret: "HungCTer",
-                            expiration: "never"
-                        });
-
-                        const link = response.data.link;
-                        return `${link}`;
-                    } catch (error) {
-                        throw new Error(`⚠️ Lỗi khi tạo mock API trên runmocky: ${error.message}`);
-                    }
-                }
-
-             
                 try {
-                    var message = await createMockAPI(args[1] || 'noname');
-                    return api.sendMessage(message, threadID, messageID);
+                    const response = await axios.post("https://api.mocky.io/api/mock", {
+                        "status": 200,
+                        "content": data,
+                        "content_type": "application/json",
+                        "charset": "UTF-8",
+                        "secret": "PhamMinhDong",
+                        "expiration": "never"
+                    });
+                    const link = response.data.link;
+
+                    
+                    return api.sendMessage(link, threadID, messageID);
+
                 } catch (error) {
-                    return api.sendMessage(error.message, threadID, messageID);
+                    return api.sendMessage(`⚠️ Lỗi khi tạo liên kết: ${error.message}`, threadID, messageID);
                 }
             }
         );
         return;
     }
 
-    const urlR = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
+    const urlR = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g
     const url = text.match(urlR);
 
     if (url) {

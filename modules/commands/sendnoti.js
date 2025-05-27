@@ -2,13 +2,13 @@ const fs = require('fs');
 const request = require('request');
 
 module.exports.config = {
-    name: "send",
-    version: "1.0.0",
+    name: "sendnoti",
+    version: "3.0.1",
     hasPermssion: 2,
-    credits: "TruongMini, mod by Lê Chí (lechii)",
-    description: "Gửi tin nhắn đến tất cả box",
-    commandCategory: "Admin",
-    usages: "[prefix]send [tin nhắn]",
+    credits: "hphong",
+    description: "send tin nhắn + video từ admin ",
+    commandCategory: "Tiện ích",
+    usages: "[msg]",
     cooldowns: 5,
 }
 
@@ -45,8 +45,8 @@ module.exports.handleReply = async function ({ api, event, handleReply, Users, T
     let name = await Users.getNameUser(senderID);
     switch (handleReply.type) {
         case "sendnoti": {
-            let text = `[ Phản Hồi Từ User ]\n──────────────────\n👤 Từ User: ${name}\n🔗 Link: https://www.facebook.com/profile.php?id=${event.senderID}\n🏘️ Nhóm: ${(await Threads.getInfo(threadID)).threadName || "Unknow"}\n⏰ Time: ${gio}\n📝 Nội dung: ${body}\n\n📌 Reply tin nhắn này để phản hồi`;
-            if(event.attachments.length > 0) text = await getAtm(event.attachments, `[ Phản Hồi Từ User ]\n──────────────────\n👤 Từ User: ${name}\n🔗 Link: https://www.facebook.com/profile.php?id=${event.senderID}\n🏘️ Nhóm: ${(await Threads.getInfo(threadID)).threadName || "Unknow"}\n⏰ Time: ${gio}\n📝 Nội dung: ${body}\n\n📌 Reply tin nhắn này để phản hồi` );
+            let text = `====== [ 𝗣𝗵𝗮̉𝗻 𝗵𝗼̂̀𝗶 𝘁𝘂̛̀ 𝗨𝘀𝗲𝗿 ] ======\n━━━━━━━━━━━━━━━━━━\n『⏱』𝐓𝐢𝐦𝐞: ${gio}\n『📝』𝐍𝐨̣̂𝐢 𝐝𝐮𝐧𝐠: ${body}\n『📩』𝐏𝐡𝐚̉𝐧 𝐡𝐨̂̀𝐢 𝐭𝐮̛̀ 𝐔𝐬𝐞𝐫: ${name}  𝒕𝒓𝒐𝒏𝒈 𝒏𝒉𝒐́𝒎 ${(await Threads.getInfo(threadID)).threadName || "Unknow"}\n━━━━━━━━━━━━━━━━\n»『💬』𝐑𝐞𝐩𝐥𝐲 𝐭𝐢𝐧 𝐧𝐡𝐚̆́𝐧 𝐧𝐚̀𝐲 𝐧𝐞̂́𝐮 𝐦𝐮𝐨̂́𝐧 𝐩𝐡𝐚̉𝐧 𝐡𝐨̂̀𝐢 𝐭𝐨̛́𝐢 𝐔𝐬𝐞𝐫`;
+            if(event.attachments.length > 0) text = await getAtm(event.attachments, `====== [ 𝗣𝗵𝗮̉𝗻 𝗵𝗼̂̀𝗶 𝘁𝘂̛̀ 𝗨𝘀𝗲𝗿 ] ======\n━━━━━━━━━━━━━━━━━━\n『⏱』𝐓𝐢𝐦𝐞: ${gio}\n『📝』𝐍𝐨̣̂𝐢 𝐝𝐮𝐧𝐠: ${body}\n『📩』𝐏𝐡𝐚̉𝐧 𝐡𝐨̂̀𝐢 𝐭𝐮̛̀ 𝐔𝐬𝐞𝐫: ${name}  𝒕𝒓𝒐𝒏𝒈 𝒏𝒉𝒐́𝒎 ${(await Threads.getInfo(threadID)).threadName || "Unknow"}\n━━━━━━━━━━━━━━━━\n»『💬』𝐑𝐞𝐩𝐥𝐲 𝐭𝐢𝐧 𝐧𝐡𝐚̆́𝐧 𝐧𝐚̀𝐲 𝐧𝐞̂́𝐮 𝐦𝐮𝐨̂́𝐧 𝐩𝐡𝐚̉𝐧 𝐡𝐨̂̀𝐢 𝐭𝐨̛́𝐢 𝐔𝐬𝐞𝐫`);
             api.sendMessage(text, handleReply.threadID, (err, info) => {
                 atmDir.forEach(each => fs.unlinkSync(each))
                 atmDir = [];
@@ -61,8 +61,8 @@ module.exports.handleReply = async function ({ api, event, handleReply, Users, T
             break;
         }
         case "reply": {
-            let text = `[ Phản Hồi Từ Admin ]\n──────────────────\n👤 Từ Admin: ${name}\n🔗 Link: https://www.facebook.com/profile.php?id=${event.senderID}\n🏘️ Nơi gửi: ${(await Threads.getInfo(threadID)).threadName || "Unknow"}\n⏰ Time: ${gio}\n📝 Nội dung: ${body}\n\n📌 Reply tin nhắn này để phản hồi`;
-            if(event.attachments.length > 0) text = await getAtm(event.attachments, `[ Phản Hồi Từ Admin ]\n──────────────────\n👤 Từ Admin: ${name}\n🔗 Link: https://www.facebook.com/profile.php?id=${event.senderID}\n🏘️ Nơi gửi: ${(await Threads.getInfo(threadID)).threadName || "Unknow"}\n⏰ Time: ${gio}\n📝 Nội dung: ${body}\n\n📌 Reply tin nhắn này để phản hồi`);
+            let text = `==== [ 𝑷𝒉𝒂̉𝒏 𝒉𝒐̂̀𝒊 𝒕𝒖̛̀ 𝑨𝑫𝑴𝑰𝑵 ] ====\n━━━━━━━━━━━━━━━━━━\n『⏱』𝐓𝐢𝐦𝐞: ${gio}\n『📝』𝐍𝐨̣̂𝐢 𝐝𝐮𝐧𝐠: ${body}\n『📩』𝐏𝐡𝐚̉𝐧 𝐡𝐨̂̀𝐢 𝐭𝐮̛̀ 𝐀𝐝𝐦𝐢𝐧: ${name} 𝑪𝒖𝒕𝒊𝒆\n━━━━━━━━━━━━━━━━\n» » 𝐑𝐞𝐩𝐥𝐲 𝐭𝐢𝐧 𝐧𝐡𝐚̆́𝐧 𝐧𝐚̀𝐲 𝐧𝐞̂́𝐮 𝐦𝐮𝐨̂́𝐧 𝐩𝐡𝐚̉𝐧 𝐡𝐨̂̀𝐢 𝐯𝐞̂̀ 𝐀𝐝𝐦𝐢𝐧 💬`;
+            if(event.attachments.length > 0) text = await getAtm(event.attachments, `==== [ 𝑷𝒉𝒂̉𝒏 𝒉𝒐̂̀𝒊 𝒕𝒖̛̀ 𝑨𝑫𝑴𝑰𝑵 ] ====\n━━━━━━━━━━━━━━━━━━\n『⏱』𝐓𝐢𝐦𝐞: ${gio}\n『📝』𝐍𝐨̣̂𝐢 𝐝𝐮𝐧𝐠: ${body}\n『📩』𝐏𝐡𝐚̉𝐧 𝐡𝐨̂̀𝐢 𝐭𝐮̛̀ 𝐀𝐝𝐦𝐢𝐧: ${name} 𝑪𝒖𝒕𝒊𝒆\n━━━━━━━━━━━━━━━━\n» » 𝐑𝐞𝐩𝐥𝐲 𝐭𝐢𝐧 𝐧𝐡𝐚̆́𝐧 𝐧𝐚̀𝐲 𝐧𝐞̂́𝐮 𝐦𝐮𝐨̂́𝐧 𝐩𝐡𝐚̉𝐧 𝐡𝐨̂̀𝐢 𝐯𝐞̂̀ 𝐀𝐝𝐦𝐢𝐧 💬`);
             api.sendMessage(text, handleReply.threadID, (err, info) => {
                 atmDir.forEach(each => fs.unlinkSync(each))
                 atmDir = [];
@@ -80,21 +80,18 @@ module.exports.handleReply = async function ({ api, event, handleReply, Users, T
 
 module.exports.run = async function ({ api, event, args, Users }) {
     const moment = require("moment-timezone");
-    var gio = moment.tz("Asia/Ho_Chi_Minh").format("DD/MM/YYYY - HH:mm:s");
+      var gio = moment.tz("Asia/Ho_Chi_Minh").format("DD/MM/YYYY - HH:mm:s");
     const { threadID, messageID, senderID, messageReply } = event;
     if (!args[0]) return api.sendMessage("Please input message", threadID);
-    
     let allThread = global.data.allThreadID || [];
     let can = 0, canNot = 0;
-    let text = `[ Thông Báo Admin ]\n──────────────────\n👤 Từ Admin: ${await Users.getNameUser(senderID)}\n🔗 Link: https://www.facebook.com/profile.php?id=${event.senderID}\n🏘️ Nơi gửi: ${event.isGroup == true ? 'Nhóm ' + global.data.threadInfo.get(event.threadID).threadName : 'từ cuộc trò chuyện riêng với bot '}\n⏰ Time: ${gio}\n📝 Nội dung: ${args.join(" ")}\n\n📌 Reply tin nhắn này để phản hồi\n💧 Thu hồi sau 10s`;
-    
-    if (event.type == "message_reply") text = await getAtm(messageReply.attachments, `[ Thông Báo Admin ]\n──────────────────\n👤 Từ Admin: ${await Users.getNameUser(senderID)}\n🔗 Link: https://www.facebook.com/profile.php?id=${event.senderID}\n🏘️ Nơi gửi: ${event.isGroup == true ? 'Nhóm ' + global.data.threadInfo.get(event.threadID).threadName : 'từ cuộc trò chuyện riêng với bot '}\n⏰ Time: ${gio}\n📝 Nội dung: ${args.join(" ")}\n\n📌 Reply tin nhắn này để phản hồi`);
-
+    let text = `» 𝗧𝗛𝗢̂𝗡𝗚 𝗕𝗔́𝗢 𝗔𝗗𝗠𝗜𝗡 «\n━━━━━━━━━━━━━━━━━━\n『⏰』𝗧𝗶𝗺𝗲: ${gio}\n『📝』𝗡𝗼̣̂𝗶 𝗱𝘂𝗻𝗴: ${args.join(" ")}\n『👤』𝗧𝘂̛̀ 𝗔𝗗𝗠𝗜𝗡: ${await Users.getNameUser(senderID)} \n━━━━━━━━━━━━━━━━━━\n『💬』𝗥𝗲𝗽𝗹𝘆 𝘁𝗶𝗻 𝗻𝗵𝗮̆́𝗻 𝗻𝗮̀𝘆 𝗻𝗲̂́𝘂 𝗺𝘂𝗼̂́𝗻 ( 𝗽𝗵𝗮̉𝗻 𝗵𝗼̂̀𝗶 ) 𝘃𝗲̀ 𝗔𝗗𝗠𝗜𝗡 💞`;
+    if(event.type == "message_reply") text = await getAtm(messageReply.attachments, `» 𝗧𝗛𝗢̂𝗡𝗚 𝗕𝗔́𝗢 𝗔𝗗𝗠𝗜𝗡 «\n━━━━━━━━━━━━━━━━━━\n『⏰』𝗧𝗶𝗺𝗲: ${gio}\n『📝』𝗡𝗼̣̂𝗶 𝗱𝘂𝗻𝗴: ${args.join(" ")}\n『👤』𝗧𝘂̛̀ 𝗔𝗗𝗠𝗜𝗡: ${await Users.getNameUser(senderID)} \n━━━━━━━━━━━━━━━━━━\n『💬』𝗥𝗲𝗽𝗹𝘆 𝘁𝗶𝗻 𝗻𝗵𝗮̆́𝗻 𝗻𝗮̀𝘆 𝗻𝗲̂́𝘂 𝗺𝘂𝗼̂́𝗻 ( 𝗽𝗵𝗮̉𝗻 𝗵𝗼̂̀𝗶 ) 𝘃𝗲̀ 𝗔𝗗𝗠𝗜𝗡 💞`);
     await new Promise(resolve => {
         allThread.forEach((each) => {
             try {
                 api.sendMessage(text, each, (err, info) => {
-                    if (err) { canNot++; }
+                    if(err) { canNot++; }
                     else {
                         can++;
                         atmDir.forEach(each => fs.unlinkSync(each))
@@ -107,19 +104,10 @@ module.exports.run = async function ({ api, event, args, Users }) {
                             threadID
                         })
                         resolve();
-                        
-                        // Set a timeout to delete the message after 10 seconds
-                        setTimeout(() => {
-                            api.deleteMessage(info.messageID);
-                        }, 10000); // 10000 milliseconds = 10 seconds
                     }
                 })
-            } catch (e) { console.log(e) }
+            } catch(e) { console.log(e) }
         })
     })
-
-    // Add a 10-second delay before confirming the notification sent successfully
-    setTimeout(() => {
-        api.sendMessage(`✅ Gửi thông báo thành công đến ${can} nhóm, ⚠️ Không thể gửi thông báo đến ${canNot} nhóm`, threadID);
-    }, 10000); // 10000 milliseconds = 10 seconds
-}
+    api.sendMessage(`✅ 𝐆𝐮̛̉𝐢 𝐭𝐡𝐨̂𝐧𝐠 𝐛𝐚́𝐨 𝐭𝐡𝐚̀𝐧𝐡 𝐜𝐨̂𝐧𝐠 𝐭𝐨̛́𝐢 ${can} 𝐧𝐡𝐨́𝐦, ❌ 𝐊𝐡𝐨̂𝐧𝐠 𝐭𝐡𝐞̂̉ 𝐠𝐮̛̉𝐢 𝐭𝐡𝐨̂𝐧𝐠 𝐛𝐚́𝐨 𝐭𝐨̛́𝐢 ${canNot} 𝐧𝐡𝐨́𝐦`, threadID);
+  }

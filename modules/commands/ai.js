@@ -1,84 +1,39 @@
 module.exports.config = {
-  name: "ai",
-  version: "4.0.0",
+  name: "bl",
+  version: "1.0.0",
   hasPermssion: 0,
-  credits: "Fumio & Dgk ",
-  description: "GPT4",
-  commandCategory: "Người dùng",
-  usages: "[Script]",
-  cooldowns: 5,
-  usePrefix: true,
+  credits: "KENLIEPLAYS",
+  description: "Blackbox by KENLIEPLAYS",
+  commandCategory: "Tiện ích",
+  usages: "[ask]",
+  cooldowns: 2,
 };
 
-const axios = require("axios");
-
-async function chat(prompt) {
+module.exports.run = async function({ api, event, args }) {
+  const axios = require("axios");
+  let { messageID, threadID, senderID, body } = event;
+  let tid = threadID,
+  mid = messageID;
+  const content = encodeURIComponent(args.join(" "));
+  if (!args[0]) return api.sendMessage("Please type a message...", tid, mid);
   try {
-    const response = await axios.get(`https://api.hamanhhung.site/ai/gemini?prompt=${encodeURIComponent(prompt)}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching response:", error);
-    throw error;
-  }
-}
-
-module.exports.run = async function ({
-  api,
-  event: e,
-  args,
-}) {
-  try {
-    const query =
-      e.type === "message_reply"
-        ? args.join(" ") + ' "' + e.messageReply.body + '"'
-        : args.join(" ");
-
-    const response = await chat(query);
-    const result = response.text;  // Lấy phần "text" từ JSON trả về
-
-    api.sendMessage(
-      result,
-      e.threadID,
-      (err, res) => {
-        if (!err) {
-          global.client.handleReply.push({
-            name: exports.config.name,
-            messageID: res.messageID,
-            messages: [{ role: "user", content: query }, { role: "assistant", content: result }]
-          });
-        }
+      const res = await axios.get(`https://api.kenliejugarap.com/blackbox/?text=${content}`);
+      const respond = res.data.response;
+      if (res.data.error) {
+          api.sendMessage(`Error: ${res.data.error}`, tid, (error, info) => {
+              if (error) {
+                  console.error(error);
+              }
+          }, mid);
+      } else {
+          api.sendMessage(respond, tid, (error, info) => {
+              if (error) {
+                  console.error(error);
+              }
+          }, mid);
       }
-    );
   } catch (error) {
-    console.error("Error:", error);
-  }
-};
-
-module.exports.handleReply = async function (o) {
-  try {
-    const messages = o.handleReply.messages;
-    const userMessage = o.event.body;
-    messages.push({ role: "user", content: userMessage });
-
-    const response = await chat(userMessage);
-    const result = response.text;  // Lấy phần "text" từ JSON trả về
-
-    o.api.sendMessage(
-      result,
-      o.event.threadID,
-      (err, res) => {
-        if (!err) {
-          messages.push({ role: "assistant", content: result });
-          global.client.handleReply.push({
-            name: exports.config.name,
-            messageID: res.messageID,
-            messages: messages
-          });
-        }
-      },
-      o.event.messageID
-    );
-  } catch (error) {
-    console.error("Error:", error);
+      console.error(error);
+      api.sendMessage("An error occurred while fetching the data.", tid, mid);
   }
 };

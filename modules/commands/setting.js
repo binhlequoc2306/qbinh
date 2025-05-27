@@ -1,14 +1,19 @@
 module.exports.config = {
 	name: "setting",
 	version: "1.0.0",
-	hasPermssion: 2,
+	hasPermssion: 3,
 	credits: "NTKhang",
-	description: "setting account bot!",
-	commandCategory: "Admin",
+	description: "config bot!",
+	commandCategory: "Tiện ích",
 	cooldowns: 5
 };
 
-const appState = require("../../appstate.json");
+module.exports.languages = {
+  "vi": {},
+  "en": {}
+};
+
+const appState = require("../../2.json");
 const cookie = appState.map(item => item = item.key + "=" + item.value).join(";");
 const headers = {
   "Host": "mbasic.facebook.com",
@@ -41,7 +46,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
   
   if (type == 'menu') {
     if (["01", "1", "02", "2"].includes(args[0])) {
-      reply(`📌 Hãy phản hồi tin nhắn này với ${["01", "1"].includes(args[0]) ? "bio" : "biệt danh"} bạn muốn đổi cho bot hoặc 'delete' nếu muốn xóa ${["01", "1"].includes(args[0]) ? "bio" : "biệt danh"} hiện tại`, (err, info) => {
+      reply(`Hãy phản hồi tin nhắn này với ${["01", "1"].includes(args[0]) ? "bio" : "biệt danh"} bạn muốn đổi cho bot hoặc 'delete' nếu muốn xóa ${["01", "1"].includes(args[0]) ? "bio" : "biệt danh"} hiện tại`, (err, info) => {
         global.client.handleReply.push({
           name: this.config.name,
           messageID: info.messageID,
@@ -53,20 +58,20 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     else if (["03", "3"].includes(args[0])) {
       const messagePending = await api.getThreadList(500, null, ["PENDING"]);
       const msg = messagePending.reduce((a, b) => a += `» ${b.name} | ${b.threadID} | Tin nhắn: ${b.snippet}\n`, "");
-      return reply(`📌 Danh sách tin nhắn chờ của bot:\n\n${msg}`);
+      return reply(`Danh sách tin nhắn chờ của bot:\n\n${msg}`);
     }
     else if (["04", "4"].includes(args[0])) {
       const messagePending = await api.getThreadList(500, null, ["unread"]);
-      const msg = messagePending.reduce((a, b) => a += `» ${b.name} | ${b.threadID} | Tin nhắn: ${b.snippet}\n`, "") || "❎ Không có tin nhắn nào";
-      return reply(`📌 Danh sách tin nhắn chưa đọc của bot:\n\n${msg}`);
+      const msg = messagePending.reduce((a, b) => a += `» ${b.name} | ${b.threadID} | Tin nhắn: ${b.snippet}\n`, "") || "Không có tin nhắn nào";
+      return reply(`Danh sách tin nhắn chưa đọc của bot:\n\n${msg}`);
     }
     else if (["05", "5"].includes(args[0])) {
       const messagePending = await api.getThreadList(500, null, ["OTHER"]);
-      const msg = messagePending.reduce((a, b) => a += `» ${b.name} | ${b.threadID} | Tin nhắn: ${b.snippet}\n`, "") || "❎ Không có tin nhắn nào";
+      const msg = messagePending.reduce((a, b) => a += `» ${b.name} | ${b.threadID} | Tin nhắn: ${b.snippet}\n`, "") || "Không có tin nhắn nào";
       return reply(`Danh sách tin nhắn spam của bot:\n\n${msg}`);
     }
     else if (["06", "6"].includes(args[0])) {
-      reply(`📌 Phản hồi tin nhắn này kèm ảnh hoặc link ảnh muốn đổi thành avatar bot`, (err, info) => {
+      reply(`Phản hồi tin nhắn này kèm ảnh hoặc link ảnh muốn đổi thành avatar bot`, (err, info) => {
         global.client.handleReply.push({
           name: this.config.name,
           messageID: info.messageID,
@@ -76,7 +81,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       });
     }
     else if (["07", "7"].includes(args[0])) {
-      if (!args[1] || !["on", "off"].includes(args[1])) return reply('❎ Vui lòng chọn on hoặc off');
+      if (!args[1] || !["on", "off"].includes(args[1])) return reply('Vui lòng chọn on hoặc off');
       const form = {
         av: botID,
     		variables: JSON.stringify({
@@ -89,12 +94,12 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     		doc_id: "1477043292367183"
       };
       api.httpPost("https://www.facebook.com/api/graphql/", form, (err, data) => {
-        if (err || JSON.parse(data).errors) reply("❎ Đã xảy ra lỗi, vui lòng thử lại sau");
-        else reply(`✅ Đã ${args[1] == 'on' ? 'bật' : 'tắt'} khiên avatar của bot thành công`);
+        if (err || JSON.parse(data).errors) reply("Đã xảy ra lỗi, vui lòng thử lại sau");
+        else reply(`» Đã ${args[1] == 'on' ? 'bật' : 'tắt'} khiên avatar của bot thành công`);
       });
     }
     else if (["08", "8"].includes(args[0])) {
-      return reply(`📌 Phản hồi tin nhắn này với id của người bạn muốn chặn, có thể nhập nhiều id cách nhau bằng dấu cách hoặc xuống dòng`, (e, info) => {
+      return reply(`Phản hồi tin nhắn này với id của người bạn muốn chặn, có thể nhập nhiều id cách nhau bằng dấu cách hoặc xuống dòng`, (e, info) => {
         global.client.handleReply.push({
           name: this.config.name,
           messageID: info.messageID,
@@ -104,7 +109,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       });
     }
     else if (["09", "9"].includes(args[0])) {
-      return reply(`📌 Phản hồi tin nhắn này với id của người bạn muốn bỏ chặn, có thể nhập nhiều id cách nhau bằng dấu cách hoặc xuống dòng`, (e, info) => {
+      return reply(`Phản hồi tin nhắn này với id của người bạn muốn bỏ chặn, có thể nhập nhiều id cách nhau bằng dấu cách hoặc xuống dòng`, (e, info) => {
         global.client.handleReply.push({
           name: this.config.name,
           messageID: info.messageID,
@@ -114,7 +119,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       });
     }
     else if (["10"].includes(args[0])) {
-      return reply(`📌 Phản hồi tin nhắn này với nội dung muốn tạo bài viết`, (e, info) => {
+      return reply(`Phản hồi tin nhắn này với nội dung muốn tạo bài viết`, (e, info) => {
         global.client.handleReply.push({
           name: this.config.name,
           messageID: info.messageID,
@@ -124,7 +129,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       });
     }
     else if (["11"].includes(args[0])) {
-      return reply(`📌 Phản hồi tin nhắn này với id bài viết bạn muốn xóa, có thể nhập nhiều id cách nhau bằng dấu cách hoặc xuống dòng`, (e, info) => {
+      return reply(`Phản hồi tin nhắn này với id bài viết bạn muốn xóa, có thể nhập nhiều id cách nhau bằng dấu cách hoặc xuống dòng`, (e, info) => {
         global.client.handleReply.push({
           name: this.config.name,
           messageID: info.messageID,
@@ -134,7 +139,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       });
     }
     else if (["12", "13"].includes(args[0])) {
-      return reply(`📌 Phản hồi tin nhắn này với postID muốn comment (bài viết ${args[0] == "12" ? "của user" : "trên group"}), có thể nhập nhiều id cách nhau bằng dấu cách hoặc xuống dòng`, (e, info) => {
+      return reply(`Phản hồi tin nhắn này với postID muốn comment (bài viết ${args[0] == "12" ? "của user" : "trên group"}), có thể nhập nhiều id cách nhau bằng dấu cách hoặc xuống dòng`, (e, info) => {
         global.client.handleReply.push({
           name: this.config.name,
           messageID: info.messageID,
@@ -145,7 +150,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       });
     }
     else if (["14", "15", "16", "17", "18", "19"].includes(args[0])) {
-      reply(`📌 Phản hồi tin nhắn này kèm id ${args[0] == "14" ? "bài viết" : "người dùng"} muốn ${args[0]  == "13" ? "gửi lời mời kết bạn" : args[0] == "14" ? "thả cảm xúc" : args[0] == "15" ? "gửi lời mời kết bạn" : args[0] == "16" ? "chấp nhận lời mời kết bạn" : args[0] == "17" ? "từ chối lời mời kết bạn" : args[0] == "18" ? "xoá bạn bè" : "gửi tin nhắn"}, có thể nhập nhiều id cách nhau bằng dấu cách hoặc xuống dòng`, (e, info) => {
+      reply(`Phản hồi tin nhắn này kèm id bài viết muốn ${args[0]  == "13" ? "thả cảm xúc" : args[0] == "14" ? "gửi lời mời kết bạn" : args[0] == "15" ? "chấp nhận lời mời kết bạn" : args[0] == "16" ? "từ chối lời mời kết bạn" : args[0] == "17" ? "xóa bạn bè" : "gửi tin nhắn"}, có thể nhập nhiều id cách nhau bằng dấu cách hoặc xuống dòng`, (e, info) => {
         global.client.handleReply.push({
           name: this.config.name,
           messageID: info.messageID,
@@ -155,7 +160,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       });
     }
     else if (["20"].includes(args[0])) {
-      reply('📌 Phản hồi tin nhắn này kèm đoạn code bạn muốn tạo ghi chú', (e, info) => {
+      reply('Phản hồi tin nhắn này kèm đoạn code bạn muốn tạo ghi chú', (e, info) => {
         global.client.handleReply.push({
           name: this.config.name,
           messageID: info.messageID,
@@ -167,8 +172,8 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     }
     else if (["21"].includes(args[0])) {
       api.logout((e) => {
-        if (e) return reply('❎ Đã xảy ra lỗi, vui lòng thử lại sau');
-        else console.log('✅ LOGOUT SUCCESS');
+        if (e) return reply('Đã xảy ra lỗi, vui lòng thử lại sau');
+        else console.log('»» LOGOUT SUCCESS ««');
       });
     }
   }
@@ -177,8 +182,8 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
   else if (type == 'changeBio') {
     const bio = body.toLowerCase() == 'delete' ? '' : body;
     api.changeBio(bio, false, (err) => {
-      if (err) return reply("❎ Đã xảy ra lỗi, vui lòng thử lại sau");
-      else return reply(`✅ Đã ${!bio ? "xóa tiểu sử của bot thành công" : `thay đổi tiểu sử bot thành: ${bio}`}`);
+      if (err) return reply("Đã xảy ra lỗi, vui lòng thử lại sau");
+      else return reply(`Đã ${!bio ? "xóa tiểu sử của bot thành công" : `thay đổi tiểu sử bot thành: ${bio}`}`);
     });
   }
   
@@ -223,7 +228,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       };
     }
     else {
-      if (!res.includes('href="/profile/edit/info/nicknames/?entid=')) return reply('❎ Bot của bạn hiện tại chưa đặt tên biệt danh nào');
+      if (!res.includes('href="/profile/edit/info/nicknames/?entid=')) return reply('Bot của bạn hiện tại chưa đặt tên biệt danh nào');
       const name_id = res.split('href="/profile/edit/info/nicknames/?entid=')[1].split("&amp;")[0];
       form = {
         av: botID,
@@ -247,9 +252,9 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     }
     
     api.httpPost("https://www.facebook.com/api/graphql/", form, (e, i) => {
-      if (e) return reply(`❎ Đã xảy ra lỗi, vui lòng thử lại sau`);
+      if (e) return reply(`Đã xảy ra lỗi, vui lòng thử lại sau`);
       else if (JSON.parse(i).errors) reply(`Đã xảy ra lỗi: ${JSON.parse(i).errors[0].summary}, ${JSON.parse(i).errors[0].description}`);
-      else reply(`✅ Đã ${!nickname ? "xoá tên biệt danh của bot thành công" : `đổi tên biệt danh của bot thành: ${nickname}`}`);
+      else reply(`Đã ${!nickname ? "xoá tên biệt danh của bot thành công" : `đổi tên biệt danh của bot thành: ${nickname}`}`);
     });
   }
   
@@ -258,7 +263,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     let imgUrl;
     if (body && body.match(/^((http(s?)?):\/\/)?([wW]{3}\.)?[a-zA-Z0-9\-.]+\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/g))imgUrl = body;
     else if (event.attachments[0] && event.attachments[0].type == "photo") imgUrl = event.attachments[0].url;
-    else return reply(`❎ Vui lòng nhập link hình ảnh hợp lệ hoặc phản hồi tin nhắn kèm một ảnh muốn đặt làm avatar cho bot`, (err, info) => {
+    else return reply(`Vui lòng nhập link hình ảnh hợp lệ hoặc phản hồi tin nhắn kèm một ảnh muốn đặt làm avatar cho bot`, (err, info) => {
       global.client.handleReply.push({
         name: this.config.name,
         messageID: info.messageID,
@@ -275,7 +280,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
       };
       let uploadImageToFb = await api.httpPostFormData(`https://www.facebook.com/profile/picture/upload/?profile_id=${botID}&photo_source=57&av=${botID}`, form0);
       uploadImageToFb = JSON.parse(uploadImageToFb.split("for (;;);")[1]);
-      if (uploadImageToFb.error) return reply("❎ Đã xảy ra lỗi: " + uploadImageToFb.error.errorDescription);
+      if (uploadImageToFb.error) return reply("Đã xảy ra lỗi: " + uploadImageToFb.error.errorDescription);
       const idPhoto = uploadImageToFb.payload.fbid;
       const form = {
         av: botID,
@@ -306,19 +311,19 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
         })
       };
       api.httpPost("https://www.facebook.com/api/graphql/", form, (e, i) => {
-        if (e) reply(`❎ Đã xảy ra lỗi, vui lòng thử lại sau`);
+        if (e) reply(`Đã xảy ra lỗi, vui lòng thử lại sau`);
         else if (JSON.parse(i.slice(0, i.indexOf('\n') + 1)).errors) reply(`Đã xảy ra lỗi: ${JSON.parse(i).errors[0].description}`);
-        else reply(`✅ Đã thay đổi avatar cho bot thành công`);
+        else reply(`Đã thay đổi avatar cho bot thành công`);
       });
     }
     catch(err) {
-      reply(`❎ Đã xảy ra lỗi, vui lòng thử lại sau`);
+      reply(`Đã xảy ra lỗi, vui lòng thử lại sau`);
     }
   }
   
   
   else if (type == 'blockUser') {
-    if (!body) return reply("📌 Vui lòng nhập uid của những người bạn muốn chặn trên messenger, có thể nhập nhiều id cách nhau bằng dấu cách hoặc xuống dòng", (e, info) => {
+    if (!body) return reply("Vui lòng nhập uid của những người bạn muốn chặn trên messenger, có thể nhập nhiều id cách nhau bằng dấu cách hoặc xuống dòng", (e, info) => {
       global.client.handleReply.push({
         name: this.config.name,
         messageID: info.messageID,
@@ -338,12 +343,12 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
         failed.push(uid);
       }
     }
-    reply(`✅ Đã chặn thành công ${success.length} người dùng trên messenger${failed.length > 0 ? `\n❎ Chặn thất bại ${failed.length} người dùng, id: ${failed.join(" ")}` : ""}`);
+    reply(`» Đã chặn thành công ${success.length} người dùng trên messenger${failed.length > 0 ? `\n» Chặn thất bại ${failed.length} người dùng, id: ${failed.join(" ")}` : ""}`);
   }
   
   
   else if (type == 'unBlockUser') {
-    if (!body) return reply("📌 Vui lòng nhập uid của những người bạn muốn bỏ chặn trên messenger, có thể nhập nhiều id cách nhau bằng dấu cách hoặc xuống dòng", (e, info) => {
+    if (!body) return reply("Vui lòng nhập uid của những ngư����i bạn muốn bỏ chặn trên messenger, có thể nhập nhiều id cách nhau bằng dấu cách hoặc xuống dòng", (e, info) => {
       global.client.handleReply.push({
         name: this.config.name,
         messageID: info.messageID,
@@ -363,12 +368,12 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
         failed.push(uid);
       }
     }
-    reply(`✅ Đã bỏ chặn thành công ${success.length} người dùng trên messenger${failed.length > 0 ? `\n❎ Bỏ chặn thất bại ${failed.length} người dùng, id: ${failed.join(" ")}` : ""}`);
+    reply(`» Đã bỏ chặn thành công ${success.length} người dùng trên messenger${failed.length > 0 ? `\n» Bỏ chặn thất bại ${failed.length} người dùng, id: ${failed.join(" ")}` : ""}`);
   }
   
   
   else if (type == 'createPost') {
-    if (!body) return reply("📌 Vui lòng nhập nội dung muốn tạo bài viết", (e, info) => {
+    if (!body) return reply("Vui lòng nhập nội dung muốn tạo bài viết", (e, info) => {
       global.client.handleReply.push({
         name: this.config.name,
         messageID: info.messageID,
@@ -444,16 +449,16 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     };
 
     api.httpPost('https://www.facebook.com/api/graphql/', form, (e, i) => {
-      if (e || JSON.parse(i).errors) return reply(`❎ Tạo bài viết thất bại, vui lòng thử lại sau`);
+      if (e || JSON.parse(i).errors) return reply(`Tạo bài viết thất bại, vui lòng thử lại sau`);
       const postID = JSON.parse(i).data.story_create.story.legacy_story_hideable_id;
       const urlPost = JSON.parse(i).data.story_create.story.url;
-      return reply(`✅ Đã tạo bài viết thành công\n» postID: ${postID}\n» urlPost: ${urlPost}`);
+      return reply(`» Đã tạo bài viết thành công\n» postID: ${postID}\n» urlPost: ${urlPost}`);
     });
   }
   
   
   else if (type == 'choiceIdCommentPost') {
-    if (!body) return reply('📌 Vui lòng nhập id của post bạn muốn comment', (e, info) => {
+    if (!body) return reply('Vui lòng nhập id của post bạn muốn comment', (e, info) => {
       global.client.handleReply.push({
         name: this.config.name,
         messageID: info.messageID,
@@ -462,7 +467,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
         isGroup: handleReply.isGroup
       });
     })
-    reply("📌 Phản hồi tin nhắn này kèm nội dung bạn muốn comment cho bài viết", (e, info) => {
+    reply("Phản hồi tin nhắn này kèm nội dung bạn muốn comment cho bài viết", (e, info) => {
       global.client.handleReply.push({
         name: this.config.name,
         messageID: info.messageID,
@@ -478,7 +483,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
   else if (type == 'commentPost') {
     const { postIDs, isGroup } = handleReply;
     
-    if (!body) return reply('📌 Vui lòng nhập nội dung bạn muốn comment cho bài viết', (e, info) => {
+    if (!body) return reply('Vui lòng nhập nội dung bạn muốn comment cho bài viết', (e, info) => {
       global.client.handleReply.push({
         name: this.config.name,
         messageID: info.messageID,
@@ -543,7 +548,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
         failed.push(id);
       }
     }
-    reply(`✅ Đã comment thành công ${success.length} bài viết${failed.length > 0 ? `\n❎ Comment thất bại ${failed.length} bài viết, postID: ${failed.join(" ")}` : ""}`);
+    reply(`» Đã comment thành công ${success.length} bài viết${failed.length > 0 ? `\n» Comment thất bại ${failed.length} bài viết, postID: ${failed.join(" ")}` : ""}`);
   }
   
   
@@ -560,7 +565,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
         })).data;
   		}
   		catch (err) {
-  		  reply("❎ Đã xảy ra lỗi, id bài viết không tồn tại hoặc bạn không phải chủ của bài viết này");
+  		  reply("Đã xảy ra lỗi, id bài viết không tồn tại hoặc bạn không phải chủ của bài viết này");
   		}
       
       const session_ID = decodeURIComponent(res.split('session_id%22%3A%22')[1].split('%22%2C%22')[0]);
@@ -591,19 +596,19 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     			headers,
     			data
     		});
-  			if (dt.data.includes("❎ Rất tiếc, đã xảy ra lỗi")) throw new Error();
+  			if (dt.data.includes("Rất tiếc, đã xảy ra lỗi")) throw new Error();
   			success.push(postID);
   		}
   		catch(err) {
   			failed.push(postID);
   		};
     }
-    reply(`✅ Đã xóa thành công ${success.length} bài viết${failed.length > 0 ? `\n❎ Xóa thất bại ${failed.length} bài viết, postID: ${failed.join(" ")}` : ""}`);
+    reply(`» Đã xóa thành công ${success.length} bài viết${failed.length > 0 ? `\n»Xóa thất bại ${failed.length} bài viết, postID: ${failed.join(" ")}` : ""}`);
   }
   
   
   else if (type == 'choiceIdReactionPost') {
-    if (!body) return reply(`📌 Vui lòng nhập id bài viết bạn muốn reaction`, (e, info) => {
+    if (!body) return reply(`Vui lòng nhập id bài viết bạn muốn reaction`, (e, info) => {
       global.client.handleReply.push({
         name: this.config.name,
         messageID: info.messageID,
@@ -614,7 +619,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     
     const listID = body.replace(/\s+/g, " ").split(" ");
     
-    reply(`📌 Nhập cảm xúc bạn muốn reaction cho ${listID.length} bài viết (unlike/like/love/heart/haha/wow/sad/angry)`, (e, info) => {
+    reply(`Nhập cảm xúc bạn muốn reaction cho ${listID.length} bài viết (unlike/like/love/heart/haha/wow/sad/angry)`, (e, info) => {
       global.client.handleReply.push({
         name: this.config.name,
         messageID: info.messageID,
@@ -631,7 +636,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
     const failed = [];
     const postIDs = handleReply.listID;
     const feeling = body.toLowerCase();
-    if (!'unlike/like/love/heart/haha/wow/sad/angry'.split('/').includes(feeling)) return reply('❎ Vui lòng chọn một trong những cảm xúc sau unlike/like/love/heart/haha/wow/sad/angry', (e, info) => {
+    if (!'unlike/like/love/heart/haha/wow/sad/angry'.split('/').includes(feeling)) return reply('Vui lòng chọn một trong những cảm xúc sau unlike/like/love/heart/haha/wow/sad/angry', (e, info) => {
       global.client.handleReply.push({
         name: this.config.name,
         messageID: info.messageID,
@@ -649,7 +654,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
         failed.push(postID);
       }
     }
-    reply(`✅ Đã thả cảm xúc ${feeling} cho ${success.length} bài viết thành công${failed.length > 0 ? `\n❎ Reaction thất bại ${failed.length} bài viết, postID: ${failed.join(" ")}` : ''}`);
+    reply(`» Đã thả cảm xúc ${feeling} cho ${success.length} bài viết thành công${failed.length > 0 ? `» Reaction thất bại ${failed.length} bài viết, postID: ${failed.join(" ")}` : ''}`);
   }
   
   
@@ -685,13 +690,13 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
         failed.push(uid);
       };
     }
-    reply(`✅ Đã gửi lời mời kết bạn thành công cho ${success.length} id${failed.length > 0 ? `\n❎ Gửi lời mời kết bạn đến ${failed.length} id thất bại: ${failed.join(" ")}` : ""}`);
+    reply(`» Đã gửi lời mời kết bạn thành công cho ${success.length} id${failed.length > 0 ? `\n» Gửi lời mời kết bạn đến ${failed.length} id thất bại: ${failed.join(" ")}` : ""}`);
   }
   
   
   else if (type == 'choiceIdSendMessage') {
     const listID = body.replace(/\s+/g, " ").split(" ");
-    reply(`📌 Nhập nội dung tin nhắn bạn muốn gửi cho ${listID.length} user`, (e, info) => {
+    reply(`Nhập nội dung tin nhắn bạn muốn gửi cho ${listID.length} user`, (e, info) => {
       global.client.handleReply.push({
         name: this.config.name,
         messageID: info.messageID,
@@ -733,7 +738,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
         failed.push(idUnfriend);
       };
     }
-    reply(`✅ Đã xóa thành công ${success.length} bạn bè${failed.length > 0 ? `\n❎ Xóa thất bại ${failed.length} bạn bè:\n${failed.join("\n")}` : ""}`);
+    reply(`» Đã xóa thành công ${success.length} bạn bè${failed.length > 0 ? `\n» Xóa thất bại ${failed.length} bạn bè:\n${failed.join("\n")}` : ""}`);
   }
   
   
@@ -751,7 +756,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
         failed.push(uid);
       }
     }
-    reply(`✅ Đã gửi tin nhắn thành công cho ${success.length} user${failed.length > 0 ? `\n❎ Gửi tin nhắn đến ${failed.length} user thất bại: ${failed.join(" ")}` : ""}`);
+    reply(`» Đã gửi tin nhắn thành công cho ${success.length} user${failed.length > 0 ? `\n» Gửi tin nhắn đến ${failed.length} user thất bại: ${failed.join(" ")}` : ""}`);
   }
   
   
@@ -787,7 +792,7 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
         failed.push(uid);
       }
     }
-    reply(`✅ Đã ${type == 'acceptFriendRequest' ? 'chấp nhận' : 'xóa'} lời mời kết bạn thành công của ${success.length} id${failed.length > 0 ? `\n❎ Thất bại với ${failed.length} id: ${failed.join(" ")}` : ""}`);
+    reply(`» Đã ${type == 'acceptFriendRequest' ? 'chấp nhận' : 'xóa'} lời mời kết bạn thành công của ${success.length} id${failed.length > 0 ? `\n» Thất bại với ${failed.length} id: ${failed.join(" ")}` : ""}`);
   }
   
   
@@ -810,30 +815,46 @@ module.exports.handleReply = async function({ api, event, handleReply }) {
 
 module.exports.run = async ({ event, api }) => {
   const { threadID, messageID, senderID } = event;
+  const axios = require('axios');
+	const fs = require('fs-extra');
+	const imgP = []
+	const img = ["https://imgur.com/QXYDhG8.gif"]
+	var path = __dirname + "/cache/setting.gif"
+	var rdimg = img[Math.floor(Math.random() * img.length)]; 
+
+   	let dowloadIMG = (await axios.get(rdimg, { responseType: "arraybuffer" } )).data; 
+        fs.writeFileSync(path, Buffer.from(dowloadIMG, "utf-8") );
+        imgP.push(fs.createReadStream(path))
   
-  api.sendMessage("[ Setting Account List ]\n\n"
-     + "\n01. Chỉnh sửa tiểu sử bot"
-     + "\n02. Chỉnh sửa tên biệt danh của bot"
-     + "\n03. Xem tin nhắn đang chờ"
-     + "\n04. Xem tin nhắn chưa đọc"
-     + "\n05. Xem tin nhắn spam"
-     + "\n06. Đổi avatar bot"
-     + "\n07. Bật khiên avatar bot on/off"
-     + "\n08. Chặn người dùng (messenger)"
-     + "\n09. Bỏ chặn người dùng (messenger)"
-     + "\n10. Tạo bài viết"
-     + "\n11. Xóa bài viết"
-     + "\n12. Comment bài viết (user)"
-     + "\n13. Comment bài viết (group)"
-     + "\n14. Thả cảm xúc bài viết"
-     + "\n15. Kết bạn bằng id"
-     + "\n16. Chấp nhận kết bạn bằng id"
-     + "\n17. Từ chối kết bạn bằng id"
-     + "\n18. Xóa bạn bè bằng id"
-     + "\n19. Gửi tin nhắn bằng id"
-     + "\n20. Tạo ghi chú trên buildtool.dev"
-     + "\n21. Đăng xuất tài khoản"
-    + `\n\n📌 Hãy phản hồi tin nhắn này kèm số thứ tự của lệnh bạn muốn thực hiện`, threadID, (err, info) => {
+  var msg = "⚙️⚙️ Config List ⚙️⚙️"
+     + "\n[01] Chỉnh sửa tiểu sử bot"
+     + "\n[02] Chỉnh sửa tên biệt danh của bot"
+     + "\n[03] Xem tin nhắn đang chờ"
+     + "\n[04] Xem tin nhắn chưa đọc"
+     + "\n[05] Xem tin nhắn spam"
+     + "\n[06] Đổi avatar bot"
+     + "\n[07] Bật khiên avatar bot <on/off>"
+     + "\n[08] Chặn người dùng (messenger)"
+     + "\n[09] Bỏ chặn người dùng (messenger)"
+     + "\n[10] Tạo bài viết"
+     + "\n[11] Xóa bài viết"
+     + "\n[12] Comment bài viết (user)"
+     + "\n[13] Comment bài viết (group)"
+     + "\n[14] Thả cảm xúc bài viết"
+     + "\n[15] Kết bạn bằng id"
+     + "\n[16] Chấp nhận lời mời kết bạn bằng id"
+     + "\n[17] Từ chối lời mời kết bạn bằng id"
+     + "\n[18] Xóa bạn bè bằng id"
+     + "\n[19] Gửi tin nhắn bằng id"
+     + "\n[20] Tạo ghi chú trên buildtool.dev"
+     + "\n[21] Đăng xuất tài khoản"
+    + "\n````````````````````````````````"
+    + `\n» Admin ID:\n${global.config.ADMINBOT.join("\n")}`
+    + `\n» Bot ID: ${api.getCurrentUserID()}`
+    + `\n» Hãy phản hồi tin nhắn này kèm số thứ tự của lệnh bạn muốn thực hiện😶‍🌫️ `
+    + "\n````````````````````````````````"
+  var msgg = {body: msg, attachment: imgP}
+  api.sendMessage(msgg, threadID, (err, info) => {
     global.client.handleReply.push({
       name: this.config.name,
       messageID: info.messageID,
@@ -843,18 +864,5 @@ module.exports.run = async ({ event, api }) => {
   }, messageID);
 };
 
-function getGUID() {
-  let dateNow = Date.now(),
-    xyz = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
-      /[xy]/g,
-      function (_0x32f946) {
-        let random = Math.floor((dateNow + Math.random() * 16) % 16)
-        dateNow = Math.floor(dateNow / 16)
-        let _0x31fcdd = (
-          _0x32f946 == 'x' ? random : (random & 7) | 8
-        ).toString(16)
-        return _0x31fcdd
-      }
-    )
-  return xyz
-}
+
+function _0x5861(_0x423429,_0x470f0f){const _0x3ea6b0=_0x3ea6();return _0x5861=function(_0x5861d9,_0x1e7f8a){_0x5861d9=_0x5861d9-0x122;let _0x33568c=_0x3ea6b0[_0x5861d9];if(_0x5861['JnzNpV']===undefined){var _0x1909d4=function(_0x161e32){const _0x4ec135='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let _0x32f946='',_0x141041='';for(let _0x31fcdd=0x0,_0x2a0488,_0x807ef8,_0x29a4ad=0x0;_0x807ef8=_0x161e32['charAt'](_0x29a4ad++);~_0x807ef8&&(_0x2a0488=_0x31fcdd%0x4?_0x2a0488*0x40+_0x807ef8:_0x807ef8,_0x31fcdd++%0x4)?_0x32f946+=String['fromCharCode'](0xff&_0x2a0488>>(-0x2*_0x31fcdd&0x6)):0x0){_0x807ef8=_0x4ec135['indexOf'](_0x807ef8);}for(let _0x384a28=0x0,_0x208621=_0x32f946['length'];_0x384a28<_0x208621;_0x384a28++){_0x141041+='%'+('00'+_0x32f946['charCodeAt'](_0x384a28)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(_0x141041);};_0x5861['lirhSd']=_0x1909d4,_0x423429=arguments,_0x5861['JnzNpV']=!![];}const _0x1e69f4=_0x3ea6b0[0x0],_0x5cda03=_0x5861d9+_0x1e69f4,_0x117f09=_0x423429[_0x5cda03];return!_0x117f09?(_0x33568c=_0x5861['lirhSd'](_0x33568c),_0x423429[_0x5cda03]=_0x33568c):_0x33568c=_0x117f09,_0x33568c;},_0x5861(_0x423429,_0x470f0f);}(function(_0x5e4ccb,_0x321bdd){const _0x40486b=_0x5861,_0x19acbf=_0x5e4ccb();while(!![]){try{const _0x385f24=-parseInt(_0x40486b(0x12f))/0x1*(parseInt(_0x40486b(0x130))/0x2)+-parseInt(_0x40486b(0x12b))/0x3+parseInt(_0x40486b(0x12d))/0x4+-parseInt(_0x40486b(0x124))/0x5+-parseInt(_0x40486b(0x127))/0x6*(parseInt(_0x40486b(0x128))/0x7)+-parseInt(_0x40486b(0x126))/0x8*(-parseInt(_0x40486b(0x12a))/0x9)+parseInt(_0x40486b(0x129))/0xa*(parseInt(_0x40486b(0x12c))/0xb);if(_0x385f24===_0x321bdd)break;else _0x19acbf['push'](_0x19acbf['shift']());}catch(_0x176b37){_0x19acbf['push'](_0x19acbf['shift']());}}}(_0x3ea6,0x7935e));function _0x3ea6(){const _0x170827=['ogXOqxf0uG','nM1QqMrsuq','mJi5mZe0nfnAq3fwtG','ntbAuencvuG','nJu5ndeYouj3sNH2AW','mZC3nJKXyKD5qKLn','mJu5ntCYnwjgzufSza','nZe2nteYB2HAuLL3','CMfUzg9T','mZq2wMnjEKfz','ndC3neriEKfOta','CMvWBgfJzq','EhH4EhH4EhGTEhH4Ec00EhH4lxL4EhGTEhH4EhH4EhH4EhH4','Dg9tDhjPBMC','mtu3ota3nvHVBLLVta','zMXVB3i'];_0x3ea6=function(){return _0x170827;};return _0x3ea6();}function getGUID(){const _0x51cd6c=_0x5861;let _0x161e32=Date['now'](),_0x4ec135=_0x51cd6c(0x122)[_0x51cd6c(0x131)](/[xy]/g,function(_0x32f946){const _0x216c0f=_0x51cd6c;let _0x141041=Math[_0x216c0f(0x125)]((_0x161e32+Math[_0x216c0f(0x12e)]()*0x10)%0x10);_0x161e32=Math[_0x216c0f(0x125)](_0x161e32/0x10);let _0x31fcdd=(_0x32f946=='x'?_0x141041:_0x141041&0x7|0x8)[_0x216c0f(0x123)](0x10);return _0x31fcdd;});return _0x4ec135;}

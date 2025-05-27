@@ -1,152 +1,183 @@
-const fs = require('fs-extra');
-const path = require('path');
-
 module.exports.config = {
-    name: 'setname',
-    version: '4.0.0',
-    hasPermssion: 0,
-    Rent: 1,
-    credits: 'Vtuan | Cthinh',
-    description: 'Đổi biệt danh trong nhóm của bạn hoặc của người bạn tag',
-    commandCategory: 'Người dùng',
-    usages: '[trống/reply/tag] + [name]',
-    usePrefix: false,
-    cooldowns: 0
+	name: "setname",
+	version: "3.0.0",
+	hasPermssion: 0,
+	credits: "pcoder",
+	description: "Đổi biệt danh trong nhóm của bạn hoặc đổi biệt danh của một ai đó bạn tag hoặc reply",
+	commandCategory: "Nhóm",
+	usages: "trống/tag/check/all/del/call + name",
+	cooldowns: 5
 };
 
 module.exports.run = async ({ api, event, args, Users }) => {
-    const filePath = path.join(__dirname, './../../modules/commands/data/setname.json');
-    const mention = Object.keys(event.mentions)[0];
-    let { threadID, messageReply, senderID, mentions, type } = event;
-  
-    if (!fs.existsSync(filePath)) {
-        fs.writeJsonSync(filePath, []);
-        api.sendMessage('Đã tạo dữ liệu. vui lòng sử dụng lại lệnh!', threadID);
-        return;
-    }
+	let { threadID, messageReply, senderID, mentions, type, participantIDs } = event;
+	const delayUnsend = 60; // giây
 
-    const jsonData = fs.readJsonSync(filePath);
-    const existingData = jsonData.find(data => data.id_Nhóm === threadID);
+	switch (args[0]) {
+		case 'call':
+		case 'Call': {
+			const dataNickName = (await api.getThreadInfo(threadID)).nicknames;
+			const objKeys = Object.keys(dataNickName);
+			const notFoundIds = participantIDs.filter(id => !objKeys.includes(id));
+			let mentionsList = [];
+			let tag = '';
+			for (let i = 0; i < notFoundIds.length; i++) {
+				const id = notFoundIds[i];
+				const name = await Users.getNameUser(id);
+				mentionsList.push({ tag: name, id });
+				tag += `${i + 1}. @${name}\n`;
+			}
+			const bd = '📣 Vui lòng setname để mọi người nhận biết bạn dễ dàng hơn';
+			const message = {
+				body: `${bd}\n\n${tag}`,
+				mentions: mentionsList
+			};
+			api.sendMessage(message, threadID);
+			return;
+		}
 
-    if (args.length > 0 && args[0].toLowerCase() === 'add') {
-        if (args.length < 2) {
-            api.sendMessage('Vui lòng nhập kí tự.', threadID);
-            return;
-        }
-        const newData = { id_Nhóm: threadID, kí_tự: args.slice(1).join(' ') || '' };
-        if (existingData) {
-            existingData.kí_tự = newData.kí_tự;
-        } else {
-            jsonData.push(newData);
-        }
-        fs.writeJsonSync(filePath, jsonData);
-        api.sendMessage('Đã cập nhật kí tự setname.', threadID);
-        return;
-    }
+		case 'del':
+		case 'Del': {
+			const threadInfo = await api.getThreadInfo(threadID);
+			if (!threadInfo.adminIDs.some(admin => admin.id === senderID)) {
+				return api.sendMessage(`⚠️ Chỉ quản trị viên mới có thể sử dụng`, threadID);
+			}
+			const dataNickName = threadInfo.nicknames;
+			const objKeys = Object.keys(dataNickName);
+			const notFoundIds = participantIDs.filter(id => !objKeys.includes(id));
+			for (const id of notFoundIds) {
+				try {
+					await api.removeUserFromGroup(id, threadID);
+				} catch (e) {
+					console.log(e);
+				}
+			}
+			return api.sendMessage(`✅ Đã xóa thành công những thành viên không setname`, threadID);
+		}
 
-    if (args.length > 0 && args[0].toLowerCase() === 'help') {
-        api.sendMessage('📑Cách sử dụng:\n- setname add [kí_tự]: Thêm kí tự setname\n- setname + tên: Đổi biệt danh\n- setname check: để xem những người chưa có biệt danh trong nhóm', threadID);
-        return;
-    }
+		case 'check':
+		case 'Check': {
+			const dataNickName = (await api.getThreadInfo(threadID)).nicknames;
+			const objKeys = Object.keys(dataNickName);
+			const notFoundIds = participantIDs.filter(id => !objKeys.includes(id));
+			let msg = '📝 Danh sách các người dùng chưa setname\n';
+			let num = 1;
+			for (const id of notFoundIds) {
+				const name = await Users.getNameUser(id);
+				msg += `\n${num++}. ${name}`;
+			}
+			msg += `\n\n📌 Thả cảm xúc vào tin nhắn này để kick những người không setname ra khỏi nhóm`;
+			return api.sendMessage(msg, threadID, (error, info) => {
+				global.client.handleReaction.push({
+					name: this.config.name,
+					messageID: info.messageID,
+					author: event.senderID,
+					abc: notFoundIds
+				});
+			});
+		}
 
-  if (args.length > 0 && args[0].toLowerCase() === 'check') {
-    try {
-      let threadInfo = await api.getThreadInfo(event.threadID);
-      let u = threadInfo.nicknames || {};
-      let participantIDs = threadInfo.participantIDs;
-      let listbd = participantIDs.filter(userID => !u[userID]);
+		case 'help':
+			return api.sendMessage(
+				`1. "setname + name" -> Đổi biệt danh của bạn\n` +
+				`2. "setname @tag + name" -> Đổi biệt danh của người dùng được đề cập\n` +
+				`3. "setname all + name" -> Đổi biệt danh của tất cả thành viên\n` +
+				`4. "setname check" -> Hiển thị danh sách người dùng chưa đặt biệt danh\n` +
+				`5. "setname del" -> Xóa người dùng chưa setname (chỉ dành cho quản trị viên)\n` +
+				`6. "setname call" -> Yêu cầu người dùng chưa đặt biệt danh đặt biệt danh`, threadID);
 
-      if (listbd.length > 0) {
-        let listNames = [];
-        let listMentions = [];
+		case 'all':
+		case 'All': {
+			try {
+				const name = (event.body).split('all')[1] || "";
+				for (const i of participantIDs) {
+					try {
+						await api.changeNickname(name, threadID, i);
+					} catch (e) {
+						console.log(e);
+					}
+				}
+				return api.sendMessage(`✅ Đã đổi biệt danh thành công cho tất cả thành viên`, threadID);
+			} catch (e) {
+				console.log(e, threadID);
+				return;
+			}
+		}
+	}
 
-        for (let [index, userID] of listbd.entries()) {
-          try {
-            let userInfo = await Users.getInfo(userID);
-            let name = userInfo.name || "Người dùng không có tên";
-            listNames.push(`${index + 1}. ${name}`);
-            listMentions.push({ tag: `@${name}`, id: userID });
-          } catch (error) {
-            console.error(`Lỗi khi lấy thông tin người dùng có ID: ${userID}`);
-          }
-        }
-        if (listNames.length > 0) {
-          let message = `😌- Danh sách người chưa có biệt danh:\n${listNames.join("\n")}`;
-          if (event.body.includes("call")) {
-            message += "\n\nHãy đặt biệt danh cho mình nhé!";
-            api.sendMessage({ body: `dậy đặt biệt danh đi :<`, mentions: listMentions }, event.threadID);
-          } else if (event.body.includes("del")) {
-            let isAdmin = threadInfo.adminIDs.some(item => item.id == event.senderID);
-            if (isAdmin) {
-              for (let userID of listbd) {
-                api.removeUserFromGroup(userID, event.threadID);
-              }
-              message += "\n\nĐã xóa những người chưa có biệt danh ra khỏi nhóm.";
-              api.sendMessage(message, event.threadID);
-            } else {
-              message += "\n\nBạn không có quyền xóa người khác ra khỏi nhóm.";
-              api.sendMessage(message, event.threadID);
-            }
-          } else if (event.body.includes("help")) {
-            message = `📔~ Lệnh check dùng để kiểm tra các thành viên trong nhóm chưa có biệt danh.\nCách sử dụng: check [call | del | help]\n\n- checksn: chỉ hiển thị danh sách người chưa có biệt danh.\n- check call: tag tất cả người chưa có biệt danh và gửi kèm tin nhắn hãy đặt biệt danh.\n- check del: xóa tất cả người chưa có biệt danh ra khỏi nhóm (chỉ dành cho quản trị viên).\n- checksn help: hiển thị hướng dẫn sử dụng lệnh này.`;
-            api.sendMessage(message, event.threadID);
-          } else {
-            message += "\n\n- dùng check help để xem cách sử dụng toàn bộ chức năng của lệnh.";
-            api.sendMessage(message, event.threadID);
-          }
-        } else {
-          api.sendMessage(`✅Không có người nào chưa có biệt danh.`, event.threadID);
-        }
-      } else {
-        api.sendMessage(`✅Tất cả thành viên đã có biệt danh.`, event.threadID);
-      }
-    } catch (error) {
-      console.error(error);
-      api.sendMessage('❌Đã xảy ra lỗi khi thực hiện chức năng kiểm tra biệt danh.', event.threadID);
-    }
-      return;
-  }
-  if (args.length > 0 && args[0].toLowerCase() === 'all') {
-      const threadInfo = await api.getThreadInfo(event.threadID);
-      const idtv = threadInfo.participantIDs;
-      const nameToChange = args.slice(1).join(" ");
+	// Trường hợp đổi cho bản thân, tag, hoặc reply
+	if (type === "message_reply" && messageReply) {
+		const name = args.join(' ');
+		const name2 = await Users.getNameUser(messageReply.senderID);
 
-      function delay(ms) {
-          return new Promise(resolve => setTimeout(resolve, ms));
-      };
+		api.changeNickname(name, threadID, messageReply.senderID, (err) => {
+			if (!err) {
+				api.sendMessage(`✅ Đã đổi tên của ${name2} thành ${name || "tên gốc"}`, threadID, (error, info) => {
+					if (!error) {
+						setTimeout(() => {
+							api.unsendMessage(info.messageID);
+						}, delayUnsend * 1000);
+					}
+				});
+			} else {
+				api.sendMessage(`❎ Nhóm chưa tắt liên kết mời!!`, threadID);
+			}
+		});
+	} else if (Object.keys(mentions).length > 0) {
+		const mentionIDs = Object.keys(mentions);
+		const name = args.slice(mentionIDs.length).join(' ').trim();
+		for (const mentionID of mentionIDs) {
+			const name2 = await Users.getNameUser(mentionID);
+			api.changeNickname(name, threadID, mentionID, (err) => {
+				if (!err) {
+					api.sendMessage(`✅ Đã đổi tên của ${name2} thành ${name || "tên gốc"}`, threadID, (error, info) => {
+						if (!error) {
+							setTimeout(() => {
+								api.unsendMessage(info.messageID);
+							}, delayUnsend * 1000);
+						}
+					});
+				} else {
+					api.sendMessage(`❎ Nhóm chưa tắt liên kết mời!!`, threadID);
+				}
+			});
+		}
+	} else {
+		const name = args.join(" ");
+		api.changeNickname(name, threadID, senderID, (err) => {
+			if (!err) {
+				api.sendMessage(`✅ Đã đổi tên của bạn thành ${name || "tên gốc"}`, threadID, (error, info) => {
+					if (!error) {
+						setTimeout(() => {
+							api.unsendMessage(info.messageID);
+						}, delayUnsend * 1000);
+					}
+				});
+			} else {
+				api.sendMessage(`❎ Nhóm chưa tắt liên kết mời!!`, threadID);
+			}
+		});
+	}
+};
 
-      for (let setname of idtv) {
-          let newName = nameToChange;
+module.exports.handleReaction = async function({ api, event, handleReaction }) {
+	if (event.userID != handleReaction.author) return;
+	if (Array.isArray(handleReaction.abc) && handleReaction.abc.length > 0) {
+		let errorMessage = '';
+		let successMessage = `✅ Đã xóa thành công ${handleReaction.abc.length} thành viên không set name`;
+		let errorOccurred = false;
 
-          if (existingData) {
-              const senderName = await Users.getNameUser(event.senderID);
-              const kt = existingData.kí_tự;
-              newName = kt + ' ' + senderName;
-          }
-
-          await delay(100);
-          await api.changeNickname(newName, event.threadID, setname);
-      }
-
-      api.sendMessage('✅Đã thay đổi biệt danh cho tất cả thành viên trong nhóm.', event.threadID);
-      return;
-  }
-  
-  if (existingData) {
-      const kt = existingData.kí_tự;
-      let name = await Users.getNameUser(event.senderID);
-      const names = args.length > 0 ? args.join(' ') : `${name}`;
-      if (names.indexOf('@') !== -1) {
-          api.changeNickname(`${kt} ${names.replace(mentions[mention], "")}`, threadID, mention, e => !e ? api.sendMessage(`${!args[0] ? 'Gỡ' : 'Thay đổi'} biệt danh hoàn tất!\nDùng setname help để xem tất cả các chức năng của lệnh`, event.threadID) : api.sendMessage(`[ ! ] - Hiện tại nhóm đang bật liên kết tham gia nên bot không thể set được biệt danh cho người dùng, hãy tắt liên kết mời để có thể xử dụng tính năng này!`, event.threadID));
-      } else {
-          api.changeNickname(`${kt} ${names}`, threadID, event.type == 'message_reply' ? event.messageReply.senderID : event.senderID, e => !e ? api.sendMessage(`${!args[0] ? 'Gỡ' : 'Thay đổi'} biệt danh hoàn tất!\nDùng setname help để xem tất cả các chức năng của lệnh`, event.threadID) : api.sendMessage(`[ ❌ ] - Hiện tại nhóm đang bật liên kết tham gia nên bot không thể set được biệt danh cho người dùng, hãy tắt liên kết mời để có thể xử dụng tính năng này!`, event.threadID));
-      }
-  } else {
-        if (args.join().indexOf('@') !== -1) {
-            const name = args.join(' ');
-            api.changeNickname(`${name.replace(mentions[mention], "")}`, threadID, mention, e => !e ? api.sendMessage(`${!args[0] ? 'Gỡ' : 'Thay đổi'} biệt danh hoàn tất!\nDùng setname help để xem tất cả các chức năng của lệnh`, event.threadID) : api.sendMessage(`[ ! ] - Hiện tại nhóm đang bật liên kết tham gia nên bot không thể set được biệt danh cho người dùng,hãy tắt liên kết mời để có thể xử dụng tính năng này!`, event.threadID));
-        } else {
-            api.changeNickname(args.join(' '), event.threadID, event.type == 'message_reply' ? event.messageReply.senderID : event.senderID, e => !e ? api.sendMessage(`${!args[0] ? 'Gỡ' : 'Thay đổi'} biệt danh hoàn tất!\nDùng setname help để xem tất cả các chức năng của lệnh`, event.threadID) : api.sendMessage(`[ ! ] - Hiện tại nhóm đang bật liên kết tham gia nên bot không thể set được biệt danh cho người dùng,hãy tắt liên kết mời để có thể xử dụng tính năng này!`, event.threadID));
-        }
-    }
+		for (let i = 0; i < handleReaction.abc.length; i++) {
+			const userID = handleReaction.abc[i];
+			try {
+				await api.removeUserFromGroup(userID, event.threadID);
+			} catch (error) {
+				errorOccurred = true;
+				errorMessage += `⚠️ Lỗi khi xóa ${userID} từ nhóm\n`;
+			}
+		}
+		api.sendMessage(errorOccurred ? errorMessage : successMessage, event.threadID);
+	} else {
+		api.sendMessage(`Không có ai!`, event.threadID);
+	}
 };

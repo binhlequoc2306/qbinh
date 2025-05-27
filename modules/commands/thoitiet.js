@@ -1,59 +1,99 @@
 module.exports.config = {
-    name: "weather",
+    name: "thoitiet",
     version: "1.0.0",
     hasPermssion: 0,
-    credits: "YourName",
-    description: "Thông báo thời tiết tự động mỗi giờ cho tất cả các nhóm",
-    commandCategory: "Người dùng",
-    usages: "",
-    usePrefix: true,
-    cooldowns: 5,
-    dependencies: {
-        "axios": ""
+    credits: "D-Jukie convert từ Goat",
+    description: "Xem thời tiết trong 5 ngày",
+    commandCategory: "tiện ích",
+    usages: "[location]",
+    cooldowns: 5
+};
+module.exports.run = async function ({
+    api,
+    event,
+    args,
+    utils
+}) {
+    const axios = require("axios");
+    const apikey = "d7e795ae6a0d44aaa8abb1a0a7ac19e4"
+    const moment = require("moment-timezone");
+    const Canvas = require("canvas");
+    const fs = require("fs-extra");
+    const area = args.join(" ");
+    if (!area) return api.sendMessage(`Vui lòng nhập địa điểm!`, event.threadID, event.messageID)
+    let areaKey, location = {},
+        dataWeather;
+    if (!fs.existsSync(__dirname + '/cache/bgweather.jpg')) {
+        let getbg = (await axios.get(`https://i.imgur.com/1Rx88Te.jpg`, {
+            responseType: "arraybuffer"
+        })).data;
+        fs.writeFileSync(__dirname + "/cache/bgweather.jpg", Buffer.from(getbg, "utf-8"));
     }
-};
-
-// Hàm onload được thực thi ngay khi module được tải lên
-module.exports.onLoad = async function ({ api }) => {
-    const apiUrl = 'https://forecast-finder.giize.com'; // Thay thế bằng URL API của bạn
-    const location = "Hanoi"; // Địa điểm mặc định
-
-    // Hàm lấy dữ liệu thời tiết và gửi thông báo
-    const sendWeatherNotification = async () => {
-        try {
-            const response = await axios.get(`${apiUrl}/forecast`, {
-                params: { location }
-            });
-            const weatherData = response.data;
-
-            // Định dạng tin nhắn thông báo thời tiết
-            const message = `
-                Thời tiết tại ${location}:
-                - Nhiệt độ: ${weatherData.temperature}°C
-                - Tình trạng: ${weatherData.condition}
-                - Độ ẩm: ${weatherData.humidity}%
-                - Tốc độ gió: ${weatherData.windSpeed} km/h
-            `;
-
-            // Lấy danh sách tất cả các nhóm bot có quyền truy cập
-            api.getThreadList(100, null, ["INBOX"], (err, list) => {
-                if (err) return console.error("Lỗi khi lấy danh sách nhóm:", err);
-
-                // Gửi thông báo đến từng nhóm
-                list.forEach(thread => {
-                    if (thread.isGroup) {
-                        api.sendMessage(message, thread.threadID);
-                    }
-                });
-            });
-        } catch (error) {
-            console.error("Lỗi khi gọi API thời tiết:", error.message);
-        }
+    if (!fs.existsSync(__dirname + "/cache/Play-Bold.ttf")) {
+        let getfont = (await axios.get("https://drive.google.com/u/0/uc?id=1uni8AiYk7prdrC7hgAmezaGTMH5R8gW8&export=download", {
+            responseType: "arraybuffer"
+        })).data;
+        fs.writeFileSync(__dirname + "/cache/Play-Bold.ttf", Buffer.from(getfont, "utf-8"));
     };
+    try {
+        const response = (await axios.get(`https://api.accuweather.com/locations/v1/cities/search.json?q=${encodeURIComponent(area)}&apikey=${apikey}&language=vi-vn`)).data;
+        if (response.length == 0) return api.sendMessage(`Không tìm thấy địa điểm này!`, event.threadID, event.messageID)
+        const data = response[0];
+        areaKey = data.Key;
+        location = { latitude: data.GeoPosition.Latitude, longitude: data.GeoPosition.Longitude };
+    } catch (err) {
+        return api.sendMessage(`Đã có lỗi xảy ra!!`, event.threadID, event.messageID)
+    }
+    try {
+        dataWeather = (await axios.get(`http://api.accuweather.com/forecasts/v1/daily/10day/${areaKey}?apikey=${apikey}&details=true&language=vi`)).data;
+    } catch (err) {
+        return api.sendMessage(`Đã có lỗi xảy ra!!`, event.threadID, event.messageID)
+    }
 
-    // Thiết lập gửi thông báo mỗi 1 giờ (3600000 milliseconds)
-    setInterval(sendWeatherNotification, 3600000);
+    function convertFtoC(F) { return Math.floor((F - 32) / 1.8); }
+    function formatHours(hours) { return moment(hours).tz("Asia/Ho_Chi_Minh").format("HH[h]mm[p]"); }
+    const dataWeatherDaily = dataWeather.DailyForecasts;
+    const dataWeatherToday = dataWeatherDaily[0];
+    let msg = `Thời tiết hôm nay:\n${dataWeather.Headline.Text}` +
+        `\n🌡 Nhiệt độ thấp nhất - cao nhất: ${convertFtoC(dataWeatherToday.Temperature.Minimum.Value)}°C - ${convertFtoC(dataWeatherToday.Temperature.Maximum.Value)}°C` +
+        `\n🌡 Nhiệt độ cảm nhận được: ${convertFtoC(dataWeatherToday.RealFeelTemperature.Minimum.Value)}°C - ${convertFtoC(dataWeatherToday.RealFeelTemperature.Maximum.Value)}°C` +
+        `\n🌅 Mặt trời mọc: ${formatHours(dataWeatherToday.Sun.Rise)}` +
+        `\n🌄 Mặt trời lặn ${formatHours(dataWeatherToday.Sun.Set)}` +
+        `\n🌃 Mặt trăng mọc: ${formatHours(dataWeatherToday.Moon.Rise)}` +
+        `\n🏙️ Mặt trăng lặn: ${formatHours(dataWeatherToday.Moon.Set)}` +
+        `\n🌞 Ban ngày: ${dataWeatherToday.Day.LongPhrase}` +
+        `\n🌙 Ban đêm: ${dataWeatherToday.Night.LongPhrase}`;
+    Canvas.registerFont(__dirname + "/cache/Play-Bold.ttf", { family: "Play-Bold" });
+    const bg = await Canvas.loadImage(__dirname + "/cache/bgweather.jpg");
+    const {
+        width,
+        height
+    } = bg;
+    const canvas = Canvas.createCanvas(width, height);
+    const ctx = canvas.getContext(`2d`);
+    ctx.drawImage(bg, 0, 0, width, height);
+    let X = 100;
+    ctx.fillStyle = "#ffffff";
+    const data = dataWeather.DailyForecasts.slice(0, 7);
+    for (let item of data) {
+        const icon = await Canvas.loadImage("http://vortex.accuweather.com/adc2010/images/slate/icons/" + item.Day.Icon + ".svg");
+        ctx.drawImage(icon, X, 210, 80, 80);
+        ctx.font = "22px Play-Bold";
+        const maxC = `${convertFtoC(item.Temperature.Maximum.Value)}°C `;
+        ctx.fillText(maxC, X, 366);
+        ctx.font = "22px Play-Bold";
+        const minC = String(`${convertFtoC(item.Temperature.Minimum.Value)}°C`);
+        const day = moment(item.Date).format("DD");
+        ctx.fillText(minC, X, 445);
+        ctx.fillText(day, X + 20, 140);
+        X += 135;
+    }
+    const pathSaveImg = __dirname + "/cache/weather.jpg";
+    fs.writeFileSync(pathSaveImg, canvas.toBuffer());
+    return api.sendMessage({
+            body: `${msg}`,
+            attachment: fs.createReadStream(pathSaveImg)
+        }, event.threadID,
+        () => fs.unlinkSync(pathSaveImg), event.messageID)
 
-    // Gọi hàm lần đầu khi bot khởi động
-    sendWeatherNotification();
-};
+}

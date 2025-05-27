@@ -1,5 +1,5 @@
 const fs = require("fs");
-const path = __dirname + "/../commands/data/timeJoin.json";
+const path = __dirname + "/../commands/data/timejoin.json";
 
 module.exports.config = {
     name: "timejoin",

@@ -1,657 +1,121 @@
-exports.config = {
+module.exports.config = {
   name: "work",
-  version: "0.0.9",
-    hasPermssion: 0,
-    credits: "Hải harin", 
-    description: "Làm việc để có tiền, có làm thì mới có ăn",
-    commandCategory: "Game",
-    usages: "[prefix]work",
-  countdown: 5,
-  envConfig: { cooldownTime: 10 },
-  usePrefix: true 
+  version: "1.0.2",
+  hasPermssion: 0,
+  credits: "Hung",
+  description: "Làm việc để có tiền, có làm thì mới có ăn",
+  commandCategory: "Kiếm Tiền",
+  cooldowns: 5,
+  envConfig: {
+    cooldownTime: 150000
+  }
 };
-exports.run = async function (o){
-  const { threadID: t, messageID: m, senderID: s } = o.event;
-  const send = (msg, callback) => o.api.sendMessage(msg, t, callback, m) 
-  let name = await o.Users.getNameUser(s)
-  let data = (await o.Threads.getData(t)).data || {}
-  let cooldown = this.config.envConfig.cooldownTime
-  if (data["workTime"] && data["workTime"][s] && data["workTime"][s] != "undefined" && cooldown - (Date.now() - data["workTime"][s]) > 0) {
-  var time = cooldown - (Date.now() - data["workTime"][s]),
-  hours = Math.floor((time / (60000 * 60000 ))/24),
-  minutes = Math.floor(time / 60000),
-  seconds = ((time % 60000) / 1000).toFixed(0); 
-  send(`[ CÔNG CỤ KIẾM TIỀN ]
-━━━━━━━━━━━━━━━━
-
-📌 Bạn đã hết lượt dùng, hãy quay lại sau ${hours} giờ ${minutes} phút ${seconds} giây`)
-  } else {
-  send({ body: `[ CÔNG CỤ KIẾM TIỀN ]
-━━━━━━━━━━━━━━━━
-
-[ 1 | 🎣 ] Câu cá
-[ 2 | 🦅 ] Bắn chim
-[ 3 | 🏹 ] Săn thú 
-[ 4 | 🍳 ] Nấu ăn
-[ 5 | 🪓 ] Chặt cây
-[ 6 | 🌾 ] Trồng cây
-[ 7 | ⛏️ ] Đào đá
-[ 8 | ⚓ ] Kéo thùng
-
-📌Thả cảm xúc or reply tương ứng vào tin nhắn này với những công việc trên để kiếm tiền`, attachment: (await require("axios").get("https://i.imgur.com/3PlJX3a.png", { responseType: "stream"})).data }, (e, i) => {
-  global.client.handleReply.push({
-  name: this.config.name,
-  messageID: i.messageID,
-  author: s,
-  name_author: name
-  }),
- global.client.handleReaction.push({
-  name: this.config.name,
-  messageID: i.messageID,
-  author: s,
-  name_author: name
-  })
-  })
-  }
-  }
-exports.handleReaction = async function (o){
-  const { threadID: t, messageID: m, userID: s, reaction: r } = o.event;
-  const h = o.handleReaction
-  o.api.unsendMessage(h.messageID)
-  let data = (await o.Threads.getData(t)).data
-  const send = (msg, callback) => o.api.sendMessage(msg, t, callback, m)
-  if (s != h.author) return send("❎ Bạn không phải người dùng lệnh");
-  switch (r) {
-  case "🎣": {   
-  var rdca = ['Cá lóc', 'Cá trê', 'Cá hồi', 'Cá diếc', 'Cá trắm', 'Cá kèo', 'Cá rô đồng','Cá mè','Cá hường', 'Cá ngát', 'Cá tra', 'Cá tai tượng','Mực lá','Mực ống','Mực sim','Mực mai','Mực trứng','Tôm sú','Tôm lớt','Tôm thẻ','Tôm hùm','Tôm sắt','Tôm đất','Tôm he'];
-  var linkMap = {
-        'Cá lóc': 'https://i.imgur.com/9n9TTuw.png',
-        'Cá trê': 'https://i.imgur.com/WqciWwv.png',
-        'Cá hồi': 'https://i.imgur.com/ib1VHM2.png',
-        'Cá diếc': 'https://i.imgur.com/NGsRAt3.png',
-        'Cá trắm': 'https://i.imgur.com/E3Wkvsc.png',
-        'Cá kèo': 'https://i.imgur.com/etC2pwp.png',
-        'Cá rô đồng': 'https://i.imgur.com/N4L2r1h.png',
-        'Cá mè': 'https://i.imgur.com/wOCt3is.png',
-        'Cá hường': 'https://i.imgur.com/HcKxJca.png',
-        'Cá ngát': 'https://i.imgur.com/P2hCxpl.png',
-        'Cá tra': 'https://i.imgur.com/fNFszDV.png',
-        'Cá tai tượng': 'https://i.imgur.com/8Vig5kM.png',
-        'Mực lá': 'https://i.imgur.com/A8AKlME.png',
-        'Mực ống': 'https://i.imgur.com/qtO7hdJ.png',
-        'Mực sim': 'https://i.imgur.com/Kq42m1p.png',
-        'Mực mai': 'https://i.imgur.com/Fvzpfxd.png',
-        'Mực trứng': 'https://i.imgur.com/qUVNMnu.png',
-        'Tôm sú': 'https://i.imgur.com/KBNW3KT.png',
-        'Tôm lớt': 'https://i.imgur.com/itRx8hZ.png',
-        'Tôm thẻ': 'https://i.imgur.com/iuPuj6q.png',
-        'Tôm hùm': 'https://i.imgur.com/53VNywr.png',
-        'Tôm sắt': 'https://i.imgur.com/zVR8eFl.png',
-        'Tôm đất': 'https://i.imgur.com/vSLyjG4.png',
-        'Tôm he': 'https://i.imgur.com/If7keuk.png'
-  };
-  var work1 = rdca[Math.floor(Math.random() * rdca.length)];
-  var link = linkMap[work1];
-  var coins1 = Math.floor(Math.random() * 10000000000000000000000000000) + 200;
-  await o.Currencies.increaseMoney(h.author, coins1);
-  var image = ['https://i.imgur.com/gMRBv7u.gif', 'https://i.imgur.com/ANpbrx4.gif']
-  send({ body: 'Đang Câu Cá...', attachment: (await require("axios").get(image[Math.floor(Math.random() * image.length)], { responseType: "stream"})).data }, async () => send({ body: `Chúc mừng ${h.name_author} đã câu dính ${work1} và thu về được ${coins1}₫ vào ví`, attachment: (await require("axios").get(link, { responseType: "stream"})).data }, async() => {
-  data["workTime"] ? data["workTime"] : data["workTime"] = {}
-  data["workTime"][h.author] = Date.now()
-  await o.Threads.setData(t, { data })
-  global.data.threadData.set(t, data)
-  }))
-  }
-  break;
-  case "🦅": {
-  var rdchim = ['Chim vàng anh','Chim sơn ca','Chim chìa vôi','Chim chào mào','chim cánh cụt','Chim yến phụng','Chim khướu','Chim họa mi','Chim công','Chim sáo','Chim vẹt cảnh','Chim cu gáy','Chim phượng hoàng đất','Chim ói cá','Chim sả rừng','Chim bạc má','Chim hồng hạc','Chim thiên đường','Chim giẻ cùi xanh','Chim kim tước','Chim vành khuyên','Chim trĩ vàng','Chim sẻ đất màu','Chim uyên ương','Chim ruồi'];
-  var linkMap = {
-  'Chim vàng anh': 'https://i.imgur.com/IODFTZT.png',
-  'Chim sơn ca': 'https://i.imgur.com/w18NZ0j.png',
-  'Chim chìa vôi': 'https://i.imgur.com/F9t6wIM.png',
-  'Chim chào mào': 'https://i.imgur.com/hAjDBb4.png',
-  'chim cánh cụt': 'https://i.imgur.com/nYZAo1n.png',
-  'Chim yến phụng': 'https://i.imgur.com/w1JpOnb.png',
-  'Chim khướu': 'https://i.imgur.com/zq6Uh8i.png',
-  'Chim họa mi': 'https://i.imgur.com/2HrqZMw.png',
-  'Chim công': 'https://i.imgur.com/KwiSalh.png',
-  'Chim sáo': 'https://i.imgur.com/kQHM2QU.png',
-  'Chim vẹt cảnh': 'https://i.imgur.com/AJfELUD.png',
-  'Chim cu gáy': 'https://i.imgur.com/IT0zskz.png',
-  'Chim phượng hoàng đất': 'https://i.imgur.com/8v1reJo.png',
-  'Chim ói cá': 'https://i.imgur.com/ZUajQh3.png',
-  'Chim sả rừng': 'https://i.imgur.com/kkzif3R.png',
-  'Chim bạc má': 'https://i.imgur.com/kySrcN8.png',
-  'Chim hồng hạc': 'https://i.imgur.com/8KgmIkT.png',
-  'Chim thiên đường': 'https://i.imgur.com/Xit2eQw.png',
-  'Chim giẻ cùi xanh': 'https://i.imgur.com/TKFlqDB.png',
-  'Chim kim tước': 'https://i.imgur.com/LibmANo.png',
-  'Chim vành khuyên': 'https://i.imgur.com/Uvc8Kes.png',
-  'Chim trĩ vàng': 'https://i.imgur.com/U29bnyV.png',
-  'Chim sẻ đất màu': 'https://i.imgur.com/R21fpw9.png',
-  'Chim uyên ương': 'https://i.imgur.com/bErM6kt.png',
-  'Chim ruồi': 'https://i.imgur.com/bjI60RY.png'
-  };
-  var work2 = rdchim[Math.floor(Math.random() * rdchim.length)];
-  var link = linkMap[work2];
-  var coins2 = Math.floor(Math.random() * 10000000000000000000000000000) + 100;
-  await o.Currencies.increaseMoney(h.author, coins2);
-  var image = ["https://i.imgur.com/xRsawOT.gif", "https://i.imgur.com/72o6Mur.gif"]
-  send({ body: 'Đang Bắn Chim...', attachment: (await require("axios").get(image[Math.floor(Math.random() * image.length)], { responseType: "stream"})).data }, async () => send({ body: `Chúc mừng ${h.name_author} đã bắn dính ${work2} và nhận thêm được ${coins2}₫ vào ví`, attachment: (await require("axios").get(link, { responseType: "stream"})).data }, async() => {
-  data["workTime"] ? data["workTime"] : data["workTime"] = {}
-  data["workTime"][h.author] = Date.now()
-  await o.Threads.setData(t, { data })
-  global.data.threadData.set(t, data)
-  }))
-} 
-  break;
-  case "🏹": {
-  var rdst = ['Hổ','Sư tử','Voi','Hươu','Khỉ','Gấu','Hải cẩu', 'Hải âu', 'Chó', 'Mèo', 'Lợn', 'Gà','Chồn','Dúi'];
-  var linkMap = {
-  'Hổ': 'https://i.imgur.com/HoheUlc.png',
-  'Sư tử': 'https://i.imgur.com/CUWGb3y.png',
-  'Voi': 'https://i.imgur.com/hxKcKKw.png',
-  'Hươu': 'https://i.imgur.com/KW6qlDJ.png',
-  'Khỉ': 'https://i.imgur.com/dIfRB8i.png',
-  'Gấu': 'https://i.imgur.com/Vhi7U57.png',
-  'Gấu nâu': 'https://i.imgur.com/rm1EPHp.jpeg',
-  'Hải cẩu': 'https://i.imgur.com/f3qPRFx.jpeg',
-  'Hải âu': 'https://i.imgur.com/esdBcdc.jpeg',
-  'Chó': 'https://i.imgur.com/jSLrQju.jpeg',
-  'Mèo': 'https://i.imgur.com/D3xGABL.jpeg',
-  'Lợn': 'https://i.imgur.com/Mi65tBI.jpeg',
-  'Gà': 'https://i.imgur.com/zeZBOpo.jpeg',
-  'Chồn': 'https://i.imgur.com/zdwr15i.jpeg',
-  'Dúi': 'https://i.imgur.com/yGl4za2.jpeg'
-  };
-  var work3 = rdst[Math.floor(Math.random() * rdst.length)];
-  var link = linkMap[work3];
-  var coins3 = Math.floor(Math.random() * 10000000000000000000000000000) + 400;
-  await o.Currencies.increaseMoney(h.author, coins3);
-  var image = ["https://i.imgur.com/aKy5VGW.gif","https://i.imgur.com/naUMa61.gif","https://i.imgur.com/KUjTvpc.gif"]
-  send({ body: 'Đang Săn Thú...', attachment: (await require("axios").get(image[Math.floor(Math.random() * image.length)], { responseType: "stream"})).data }, async () => send({ body: `Chúc mừng ${h.name_author} đã săn được ${work3} và húp thêm được ${coins3}₫ vào ví`, attachment: (await require("axios").get(link, { responseType: "stream"})).data }, async() => {
-  data["workTime"] ? data["workTime"] : data["workTime"] = {}
-  data["workTime"][h.author] = Date.now()
-  await o.Threads.setData(t, { data })
-  global.data.threadData.set(t, data)
-  }))
-  }
-  break;
-  case "🍳": {
-  var rdna = ['Phở','Chả cá','Bánh xèo','Rau muống','Nem rán/chả giò','Gỏi cuốn','Bún bò Huế','Gà nướng','Bánh cuốn','Pizza','Caesar salad','Hamburger bò phô mai','Khoai tây nghiền','Mỳ Ý sốt cà chua bò bằm - mì sốt spaghetti','Khoai tây đút lò','Bò hầm rau củ kiểu Pháp','Cá hồi sốt chanh dây'];
-  var linkMap = {
-  'Phở': 'https://i.imgur.com/uPYXvsq.png',
-  'Chả cá': 'https://i.imgur.com/kO3xF0x.png',
-  'Bánh xèo': 'https://i.imgur.com/NqO1eLY.png',
-  'Rau muống': 'https://i.imgur.com/NHrlJpQ.jpeg',
-  'Nem rán/chả giò': 'https://i.imgur.com/8kIUE7d.jpeg',
-  'Gỏi cuốn': 'https://i.imgur.com/5vPbIQX.jpeg',
-  'Bún bò Huế': 'https://i.imgur.com/WmsyFxP.jpeg',
-  'Gà nướng': 'https://i.imgur.com/wap9yXx.jpeg',
-  'Bánh cuốn': 'https://i.imgur.com/9uWffvI.png',
-  'Pizza': 'https://i.imgur.com/DXCUkfH.jpeg',
-  'Caesar salad': 'https://i.imgur.com/VYTcz1U.jpeg',
-  'Hamburger bò phô mai': 'https://i.imgur.com/rJLL2xy.jpeg',
-  'Khoai tây nghiền': 'https://i.imgur.com/qXXpmie.jpeg',
-  'Mỳ Ý sốt cà chua bò bằm - mì sốt spaghetti': 'https://i.imgur.com/PhlIgh1.jpeg',
-  'Khoai tây đút lò': 'https://i.imgur.com/YpVQM3H.jpeg',
-  'Bò hầm rau củ kiểu Pháp': 'https://i.imgur.com/cRkmyUX.jpeg',
-  'Cá hồi sốt chanh dây': 'https://i.imgur.com/BiTtiNO.jpeg'
-  };
-  var work4 = rdna[Math.floor(Math.random() * rdna.length)];
-  var link = linkMap[work4];
-  var coins4 = Math.floor(Math.random() * 10000000000000000000000000000) + 90;
-  var image = "https://i.imgur.com/Tptoq8D.gif"
-  send({ body: 'Đang Nấu Ăn...', attachment: (await require("axios").get(image, { responseType: "stream"})).data }, async () => send({ body: `Chúc mừng ${h.name_author} đã nấu được món ${work4} và nhận được ${coins4}₫ vào ví`, attachment: (await require("axios").get(link, { responseType: "stream"})).data }, async() => {
-  data["workTime"] ? data["workTime"] : data["workTime"] = {}
-  data["workTime"][h.author] = Date.now()
-  await o.Threads.setData(t, { data })
-  global.data.threadData.set(t, data)
-  }))
-  }
-  break;
-  case "🪓": {
-  var rdcc = ['Gỗ sồi','Gỗ bạch dương','Gỗ keo','Gỗ vân sam','Gỗ lim','Gỗ sưa','Gỗ hương','Gỗ mun','Gỗ gụ','Gỗ trắc','Gỗ cẩm','Gỗ cẩm lai','Gỗ nghiến','Gỗ mít','Gỗ xoan đào'];
-  var linkMap = {
-  'Gỗ sồi': 'https://i.imgur.com/H8HXVwa.png',
-  'Gỗ bạch dương': 'https://i.imgur.com/xw29rr9.png',
-  'Gỗ keo': 'https://i.imgur.com/smfz1AY.png',
-  'Gỗ vân sam': 'https://i.imgur.com/qWiVr6v.png',
-  'Gỗ lim': 'https://i.imgur.com/K7Pd5eF.png',
-  'Gỗ sưa': 'https://i.imgur.com/daiGbSc.png',
-  'Gỗ hương': 'https://i.imgur.com/UlJGcnW.png',
-  'Gỗ mun': 'https://i.imgur.com/1Sidihg.png',
-  'Gỗ gụ': 'https://i.imgur.com/cTgBIzh.png',
-  'Gỗ trắc': 'https://i.imgur.com/y8O8hqL.png',
-  'Gỗ cẩm': 'https://i.imgur.com/G7kbTYu.png',
-  'Gỗ cẩm lai': 'https://i.imgur.com/ihXPbsl.png',
-  'Gỗ nghiến': 'https://i.imgur.com/b2DWVg5.png',
-  'Gỗ mít': 'https://i.imgur.com/viKR8TG.png',
-  'Gỗ xoan đào': 'https://i.imgur.com/AC8eush.png'
-  };
-  var work5 = rdcc[Math.floor(Math.random() * rdcc.length)];
-  var link = linkMap[work5];
-  var coins5 = Math.floor(Math.random() * 10000000000000000000000000000) + 500;
-  await o.Currencies.increaseMoney(h.author, coins5);
-  var image = ["https://i.imgur.com/706Rr8j.gif" , "https://i.imgur.com/EN15fDe.gif"]
-  send({ body: 'Đang Chặt Cây...', attachment: (await require("axios").get(image[Math.floor(Math.random * image.length)], { responseType: "stream"})).data }, async () => send({ body: `Chúc mừng ${h.name_author} đã chặt được ${work5} và bú thêm được ${coins5}₫ vào ví`, attachment: (await require("axios").get(link, { responseType: "stream"})).data }, async() => {
-  data["workTime"] ? data["workTime"] : data["workTime"] = {}
-  data["workTime"][h.author] = Date.now()
-  await o.Threads.setData(t, { data })
-  global.data.threadData.set(t, data)
-  }))
-  }
-  break;
-  case "🌾": {
-  var rdtc = ['Cây lúa nước','Cây ngô','Cây khoai tây','Cây lúa mì','Cây sắn','Cây khế','Cây đại mạch','Cây khoai lang','Cây mía','Cây lạc','Cây đậu tương','Cây đậu xanh','Cây bông gòn','Cây vừng ( cây mè)','Cây thuốc lào/thuốc lá','Cây dứa (trái thơm)','Cây đu đủ','Cây cà chua', 'Cây cam', 'Cây quýt', 'Cây bưởi', 'Cây táo', 'Cây chôm chôm', 'Cây dưa hấu', 'Cây nhãn', 'Cây vải'];
-  var linkMap = {
-  'Cây mía': 'https://i.imgur.com/IaHFRhC.png',
-  'Cây lạc': 'https://i.imgur.com/D46xKnp.png',
-  'Cây đậu tương': 'https://i.imgur.com/dMnOCOi.png',
-  'Cây đậu xanh': 'https://i.imgur.com/xi3OnHj.png',
-  'Cây bông gòn': 'https://i.imgur.com/MHcQuwu.png',
-  'Cây vừng ( cây mè)': 'https://i.imgur.com/xPoe97R.png',
-  'Cây thuốc lào/thuốc lá': 'https://i.imgur.com/aAzpc64.png',
-  'Cây dứa (trái thơm)': 'https://i.imgur.com/mZCJt7I.png',
-  'Cây đu đủ': 'https://i.imgur.com/vacca7H.png',
-  'Cây lúa nước': 'https://i.imgur.com/1uvraj4.png',
-  'Cây ngô': 'https://i.imgur.com/8us4Zxb.png',
-  'Cây khoai tây': 'https://i.imgur.com/Ld1VqaR.png',
-  'Cây lúa mì': 'https://i.imgur.com/DycGgOY.png',
-  'Cây sắn': 'https://i.imgur.com/c78qbES.png',
-  'Cây khế': 'https://i.imgur.com/Y5GUGmV.png',
-  'Cây đại mạch': 'https://i.imgur.com/JmNnwQC.png',
-  'Cây khoai lang': 'https://i.imgur.com/pnyKcbF.png',
-  'Cây cà chua': 'https://i.imgur.com/LCBH1rf.jpeg',
-  'Cây cam': 'https://i.imgur.com/M9ZMwX2.jpeg',
-  'Cây quýt': 'https://i.imgur.com/Dv9rA98.jpeg',
-  'Cây bưởi': 'https://i.imgur.com/HJP06Ub.jpeg',
-  'Cây táo': 'https://i.imgur.com/TSPTQaT.jpeg',
-  'Cây chôm chôm': 'https://i.imgur.com/DKQa37x.jpeg',
-  'Cây dưa hấu': 'https://i.imgur.com/SuB8ExQ.jpg',
-  'Cây nhãn': 'https://i.imgur.com/XPwap6p.jpeg',
-  'Cây vải': 'https://i.imgur.com/ViiNwUP.jpeg'
-  };
-  var work6 = rdtc[Math.floor(Math.random() * rdtc.length)];
-  var link = linkMap[work6];
-  var coins6 = Math.floor(Math.random() * 10000000000000000000000000000) + 1000;
-  await o.Currencies.increaseMoney(h.author, coins6);
-  var image = "https://i.imgur.com/HHBF6Yy.gif"
-  send({ body: 'Đang Trồng Cây...', attachment: (await require("axios").get(image, { responseType: "stream"})).data }, async () => send({ body: `Chúc mừng ${h.name_author} đã trồng được ${work6} và bán được ${coins6}₫ và nhận vào ví`, attachment: (await require("axios").get(link, { responseType: "stream"})).data }, async() => {
-  data["workTime"] ? data["workTime"] : data["workTime"] = {}
-  data["workTime"][h.author] = Date.now()
-  await o.Threads.setData(t, { data })
-  global.data.threadData.set(t, data)
-  }))
-  }
-  break;
-  case "⛏️": {
-  var rddd = ['Đồng', 'Chì', 'Vàng', 'Kẽm',' Sắt', 'Nhôm', 'Thiếc','Mangan','Đá vôi', 'Đất sét', 'Cát','Ngọc thạch anh','Kim cương','Ngọc lục bảo', 'Hồng ngọc','Đá mã não','Saphia'];
-  var linkMap = {
-  'Đồng': 'https://i.imgur.com/EghuDew.png',
-  'Chì': 'https://i.imgur.com/SuHXtP1.png',
-  'Vàng': 'https://i.imgur.com/cxTORIe.png',
-  'Kẽm': 'https://i.imgur.com/MujYEyd.png',
-  'Sắt': 'https://i.imgur.com/yD5IrG4.png',
-  'Nhôm': 'https://i.imgur.com/NJcNYCX.png',
-  'Thiếc': 'https://i.imgur.com/yInlgHh.png',
-  'Mangan': 'https://i.imgur.com/uyGmRwE.png',
-  'Đá vôi': 'https://i.imgur.com/WXaxHot.png',
-  'Đất sét': 'https://i.imgur.com/Nlh30Lf.png',
-  'Cát': 'https://i.imgur.com/DtOq5hX.png',
-  'Ngọc thạch anh': 'https://i.imgur.com/oJoN0j7.png',
-  'Kim cương': 'https://i.imgur.com/69QZHLQ.png',
-  'Ngọc lục bảo': 'https://i.imgur.com/DJzj1EN.png',
-  'Hồng ngọc': 'https://i.imgur.com/lsXUHeJ.png',
-  'Đá mã não': 'https://i.imgur.com/bGcW9bN.png',
-  'Saphia': 'https://i.imgur.com/JBOaVEW.png'
-  };
-  var work7 = rddd[Math.floor(Math.random() * rddd.length)];
-  var link = linkMap[work7];
-  var coins7 = Math.floor(Math.random() * 10000000000000000000000000000) + 420;
-  await o.Currencies.increaseMoney(h.author, coins7);
-  var image = "https://i.imgur.com/HHzSQSE.gif"
-  send({ body: 'Đang Đào Đá...', attachment: (await require("axios").get(image, { responseType: "stream"})).data }, async () => send({ body: `Chúc mừng ${h.name_author} đã đào được ${work7} và bán nhận về được ${coins7}₫ vào ví`, attachment: (await require("axios").get(link, { responseType: "stream"})).data }, async() => {
-  data["workTime"] ? data["workTime"] : data["workTime"] = {}
-  data["workTime"][h.author] = Date.now()
-  await o.Threads.setData(t, { data })
-  global.data.threadData.set(t, data)
-  }))
-  }
-  case "⚓": {
-  var rdt = ["Thùng carton", "Thùng phi", "Thùng sơn", "Thùng nhựa", "Thùng gạo", "Thùng sắt", "Thùng bia", "Thùng nước", "Thùng nuôi cá", "Thùng rác", "Thùng dữ nhiệt", "Thùng xốp", "Thùng nước ngọt", "Thùng contender", "Thùng mì"];
-  var linkMap = {
-  "Thùng carton": "https://i.imgur.com/Rv3F13u.jpeg",
-  "Thùng phi": "https://i.imgur.com/3XK7J4r.jpeg",
-  "Thùng sơn": "https://i.imgur.com/9kQB6QF.jpeg",
-  "Thùng nhựa": "https://i.imgur.com/JUcaHDq.jpeg",
-  "Thùng gạo": "https://i.imgur.com/TxKZP6C.jpeg",
-  "Thùng sắt": "https://i.imgur.com/HFPSKX0.jpeg",
-  "Thùng bia": "https://i.imgur.com/yNymW9i.jpeg",
-  "Thùng nước": "https://i.imgur.com/WVPFdYx.jpeg",
-  "Thùng nuôi cá": "https://i.imgur.com/55Etztj.jpeg",
-  "Thùng rác": "https://i.imgur.com/9AHLg26.jpeg",
-  "Thùng dữ nhiệt": "https://i.imgur.com/R3Z8DWX.jpeg",
-  "Thùng xốp": "https://i.imgur.com/8rjxtXU.jpeg",
-  "Thùng nước ngọt": "https://i.imgur.com/hqDTCxA.jpeg",
-  "Thùng contender": "https://i.imgur.com/TlkGrJ7.jpeg",
-  "Thùng mì": "https://i.imgur.com/CJw9Sid.jpeg",
-  }
-  var work8 = rdt[Math.floor(Math.random() * rdt.length)];
-  var link = linkMap[work8];
-  var coins8 = Math.floor(Math.random() * 10000000000000000000000000000) + 500;
-  await o.Currencies.increaseMoney(h.author, coins8);
-  var image = "https://imgur.com/0eCG0xf.gif"
-  send({ body: 'Đang Kéo thùng...', attachment: (await require("axios").get(image, { responseType: "stream"})).data }, async () => send({ body: `Chúc mừng ${h.name_author} đã kéo được ${work8} và bán nhận về được ${coins8}₫ vào ví`, attachment: (await require("axios").get(link, { responseType: "stream"})).data }, async() => {
-  data["workTime"] ? data["workTime"] : data["workTime"] = {}
-  data["workTime"][h.author] = Date.now()
-  await o.Threads.setData(t, { data })
-  global.data.threadData.set(t, data)
-  }))
-  }
-  break;
-  default: send("❎ Icon này không nằm trong danh sách")
+module.exports.languages = {
+  "vi": {
+    "cooldown": "😷𝗞𝗶𝗲̣̂𝘁 𝗦𝘂̛́𝗰 !!!!   𝗣𝗵𝘂̣𝗰 𝗛𝗼̂̀𝗶 𝗦𝗮𝘂🤕: %1 phút %2 giây."
+  },
+  "en": {
+    "cooldown": "⚡️You're done, come back later: %1 minute(s) %2 second(s)."
   }
 }
-exports.handleReply = async function (o){
-  const { threadID: t, messageID: m, senderID: s, body: b } = o.event;
-  const h = o.handleReply
-  o.api.unsendMessage(h.messageID)
-  const send = (msg, callback) => o.api.sendMessage(msg, t, callback, m)
-  let data = (await o.Threads.getData(t)).data
-  if (s != h.author) return send("❎ Bạn không phải người dùng lệnh");
-  switch (b) {
-  case "1": {   
-  var rdca = ['Cá lóc', 'Cá trê', 'Cá hồi', 'Cá diếc', 'Cá trắm', 'Cá kèo', 'Cá rô đồng','Cá mè','Cá hường', 'Cá ngát', 'Cá tra', 'Cá tai tượng','Mực lá','Mực ống','Mực sim','Mực mai','Mực trứng','Tôm sú','Tôm lớt','Tôm thẻ','Tôm hùm','Tôm sắt','Tôm đất','Tôm he'];
-  var linkMap = {
-        'Cá lóc': 'https://i.imgur.com/9n9TTuw.png',
-        'Cá trê': 'https://i.imgur.com/WqciWwv.png',
-        'Cá hồi': 'https://i.imgur.com/ib1VHM2.png',
-        'Cá diếc': 'https://i.imgur.com/NGsRAt3.png',
-        'Cá trắm': 'https://i.imgur.com/E3Wkvsc.png',
-        'Cá kèo': 'https://i.imgur.com/etC2pwp.png',
-        'Cá rô đồng': 'https://i.imgur.com/N4L2r1h.png',
-        'Cá mè': 'https://i.imgur.com/wOCt3is.png',
-        'Cá hường': 'https://i.imgur.com/HcKxJca.png',
-        'Cá ngát': 'https://i.imgur.com/P2hCxpl.png',
-        'Cá tra': 'https://i.imgur.com/fNFszDV.png',
-        'Cá tai tượng': 'https://i.imgur.com/8Vig5kM.png',
-        'Mực lá': 'https://i.imgur.com/A8AKlME.png',
-        'Mực ống': 'https://i.imgur.com/qtO7hdJ.png',
-        'Mực sim': 'https://i.imgur.com/Kq42m1p.png',
-        'Mực mai': 'https://i.imgur.com/Fvzpfxd.png',
-        'Mực trứng': 'https://i.imgur.com/qUVNMnu.png',
-        'Tôm sú': 'https://i.imgur.com/KBNW3KT.png',
-        'Tôm lớt': 'https://i.imgur.com/itRx8hZ.png',
-        'Tôm thẻ': 'https://i.imgur.com/iuPuj6q.png',
-        'Tôm hùm': 'https://i.imgur.com/53VNywr.png',
-        'Tôm sắt': 'https://i.imgur.com/zVR8eFl.png',
-        'Tôm đất': 'https://i.imgur.com/vSLyjG4.png',
-        'Tôm he': 'https://i.imgur.com/If7keuk.png'
-  };
-  var work1 = rdca[Math.floor(Math.random() * rdca.length)];
-  var link = linkMap[work1];
-  var coins1 = Math.floor(Math.random() * 10000000000000000000000000000) + 200;
-  await o.Currencies.increaseMoney(h.author, coins1);
-  var image = ['https://i.imgur.com/gMRBv7u.gif', 'https://i.imgur.com/ANpbrx4.gif']
-  send({ body: 'Đang Câu Cá...', attachment: (await require("axios").get(image[Math.floor(Math.random() * image.length)], { responseType: "stream"})).data }, async () => send({ body: `Chúc mừng ${h.name_author} đã câu dính ${work1} và thu về được ${coins1}₫ vào ví`, attachment: (await require("axios").get(link, { responseType: "stream"})).data }, async() => {
-  data["workTime"] ? data["workTime"] : data["workTime"] = {}
-  data["workTime"][h.author] = Date.now()
-  await o.Threads.setData(t, { data })
-  global.data.threadData.set(t, data)
-  }))
+module.exports.handleReply = async ({ event, api, handleReply, Currencies, getText }) => {
+  const { threadID, messageID, senderID } = event;
+  let data = (await Currencies.getData(senderID)).data || {};
+  //random coins nhận được khi làm việc ít nhất 200
+  var coinscn = Math.floor(Math.random() * 10000) + 200; //random coins khi làm ở khu công nghiệp
+  var coinsdv = Math.floor(Math.random() * 17000) + 100; //random coins khi làm ở khu dịch vụ
+  var coinsmd = Math.floor(Math.random() * 30000) + 400; //random coins khi làm ở mỏ dầu
+  var coinsq = Math.floor(Math.random() * 20000) + 90; //random coins khi khai thác quặng
+  var coinsdd = Math.floor(Math.random() * 50000) + 500; //random coins khi đào đá
+  var coinsdd1 = Math.floor(Math.random() * 40000) + 1000; //random coins khi đào đá
+  var coinsex2 = Math.floor(Math.random() * 30000) + 420;
+  var coinsktf = Math.floor(Math.random() * 30000) + 4200;
+  ///////------------random thêm việc cần làm.-----------------////////
+  var rdcn = ['𝟭 𝗞𝗶𝗹𝗹', '𝟱 𝗞𝗶𝗹𝗹', '𝟯 𝗞𝗶𝗹𝗹', '𝟭𝟵 𝗞𝗶𝗹𝗹', '𝟴𝟭𝟴 𝗞𝗶𝗹𝗹', '𝟯 𝗞𝗶𝗹𝗹', '𝗧𝗼𝗽𝟭 𝗩𝗼̛́𝗶 𝟬 𝗞𝗶𝗹𝗹'];
+  var work1 = rdcn[Math.floor(Math.random() * rdcn.length)];
+
+  var rddv = ['𝗖𝗮̀𝘆 𝗧𝗵𝘂𝗲̂', '𝗟𝗮𝘂 𝗡𝗵𝗮̀', '𝗶̣ 𝗧𝗵𝘂𝗲̂', '𝗕𝘂𝘀𝗰𝘂', '𝗙𝗶𝘅 𝗠𝗼𝗱𝘂𝗹𝗲𝘀', '𝗗𝗶𝗲̂̃𝗻 𝗞𝗶̣𝗰𝗵', '𝗖𝗼̂𝗻𝗴 𝗖𝗵𝘂́𝗮'];
+  var work2 = rddv[Math.floor(Math.random() * rddv.length)];
+
+  var rdmd = ['𝗫𝟮 𝗚𝗼̂̃', '𝗫𝟴 𝗚𝗼̂̃', '𝗫𝟭𝟵 𝗚𝗼̂̃', '𝗫𝟭 𝗚𝗼̂̃', '𝗫𝟵𝟵𝟵 𝗚𝗼̂̃', '𝗫𝟭𝟮 𝗚𝗼̂̃', '𝗫𝟰 𝗚𝗼̂̃'];
+  var work3 = rdmd[Math.floor(Math.random() * rdmd.length)];
+
+  var rdq = ['𝗞𝗶𝗲̂́𝗺 𝗦𝗮̆́𝘁', '𝗞𝗶𝗲̂́𝗺 𝗞𝗶𝗺 𝗖𝘂̛𝗼̛𝗻𝗴', '𝗞𝗶𝗲̂́𝗺 𝗖𝗵𝗶̀', '𝗞𝗶𝗲̂́𝗺 𝗡𝗲𝘁𝗵𝗲𝗿', '𝗞𝗶𝗲̂́𝗺 𝗚𝗼̂̃', '𝗞𝗶𝗲̂́𝗺 𝗩𝗮̀𝗻𝗴', '𝗞𝗶𝗲̂́𝗺 𝗖𝘂'];
+  var work4 = rdq[Math.floor(Math.random() * rdq.length)];
+
+  var rddd = ['𝗧𝗵𝗮̂́𝘆 𝗖𝗿𝘂𝘀𝗵 𝗕𝘂𝘀𝗰𝘂 𝗕𝗮̣𝗻', '𝗠𝗲̣ 𝗧𝗵𝘂 𝗠𝗮́𝘆', '𝗶̣ 𝗫𝗼𝗻𝗴 𝗛𝗲̂́𝘁 𝗚𝗶𝗮̂́𝘆', '𝗤𝘂𝗲̂𝗻 𝗕𝗮̣̂𝘁 𝗡𝘂́𝘁 𝗡𝗼̂̀𝗶 𝗖𝗼̛𝗺', '𝗕𝗶̣ 𝗕𝗮̆́𝘁 𝗖𝗼́𝗰', '𝗛𝗲̂́𝘁 𝗠𝗮̣𝗻𝗴', '𝗪𝗶𝗳𝗶 𝗛𝗼̉𝗻𝗴'];
+  var work5 = rddd[Math.floor(Math.random() * rddd.length)];
+
+  var rddd1 = ['𝗚𝗶𝗮́𝗽 𝗦𝗮̆́𝘁', '𝗚𝗶𝗮́𝗽 𝗩𝗮̀𝗻𝗴', '𝗚𝗶𝗮́𝗽 𝗗𝗮', '𝗚𝗶𝗮́𝗽 𝗞𝗶𝗺 𝗖𝘂̛𝗼̛𝗻𝗴', '𝗚𝗶𝗮́𝗽 𝗡𝗲𝘁𝗵𝗲𝗿', '𝗚𝗶𝗮́𝗽 𝗦𝗶𝗲̂𝘂 𝗡𝗵𝗮̂𝗻', '𝗚𝗶𝗮́𝗽 𝗔́𝗰 𝗤𝘂𝘆̉'];
+  var work6 = rddd1[Math.floor(Math.random() * rddd1.length)];
+
+  var rdex1 = ['𝗭𝗼𝗺𝗯𝗶𝗲', '𝗦𝗶𝗲̂𝘂 𝗤𝘂𝗮́𝗶', '𝗡𝗮𝗿𝘂𝘁𝗼', '𝗦𝗼𝗻𝗴𝗼𝗸𝘂', '𝗟𝗲-𝗺𝗶𝗻-𝗵𝗼', '𝗖𝗼̂𝗻𝗴 𝗖𝗵𝘂́𝗮', '𝗛𝗼𝗮̀𝗻𝗴 𝗧𝘂̛̉'];
+  var work7 = rdex1[Math.floor(Math.random() * rdex1.length)];
+
+  var rdktf = ['𝗦𝗮̆́𝘁', '𝗩𝗮̀𝗻𝗴', '𝗧𝗵𝗮𝗻', '𝗖𝗵𝗶̀', '𝗧𝗵𝗮̣𝗰𝗵 𝗔𝗻𝗵', '𝗗𝗮̂̀𝘂', '𝗞𝗶𝗺 𝗖𝘂̛𝗼̛𝗻𝗴', '𝗘𝗻𝘁𝗵𝗲𝗿'];
+  var work8 = rdktf[Math.floor(Math.random() * rdktf.length)];
+
+  var msg = "";
+  switch (handleReply.type) {
+    case "choosee": {
+
+      switch (event.body) {
+        case "1": msg = `𝗕𝗮̣𝗻 𝗖𝗵𝗼̛𝗶 𝗙𝗙 𝗚𝗶𝗲̂́𝘁 𝗖𝗵𝗲̂́𝘁 ${work1} 𝗩𝗮̀ 𝗟𝗮̂́𝘆 𝗩𝗲̂̀ ${coinscn}$`; await Currencies.increaseMoney(event.senderID, parseInt(coinscn)); break;
+        case "2": msg = `𝗕𝗮̣𝗻 𝗩𝘂̛̀𝗮 𝗟𝗮̀𝗺 𝗩𝗶𝗲̣̂𝗰 ${work2} 𝗩𝗮̀ 𝗧𝗵𝘂 𝗩𝗲̂̀ ${coinsdv}$`; await Currencies.increaseMoney(event.senderID, parseInt(coinsdv)); break;
+        case "3": msg = `𝗕𝗮̣𝗻 𝗩𝘂̛̀𝗮 𝗖𝗵𝗮̣̆𝘁 ${work3} 𝗧𝗮̣𝗶 𝗥𝘂̛̀𝗻𝗴 𝗩𝗮̀ 𝗞𝗶𝗲̂́𝗺 𝗩𝗲̂̀ ${coinsmd}$`; await Currencies.increaseMoney(event.senderID, parseInt(coinsmd)); break;
+        case "4": msg = `𝗕𝗮̣𝗻 𝗩𝘂̛̀𝗮 𝗥𝗲̀𝗻 ${work4} 𝗩𝗮̀ 𝗡𝗵𝗮̣̂𝗻 𝗩𝗲̂̀ ${coinsq}$`; await Currencies.increaseMoney(event.senderID, parseInt(coinsq)); break;
+        case "5": msg = `𝗕𝗮̣𝗻 𝗧𝗵𝗮̂́𝘆 ${work5} 𝗡𝗲̂𝗻 𝗦𝗼̂́𝗰 𝗖𝗵𝗲̂́𝘁 𝗩𝗮̀ 𝗧𝗵𝗮̂̀𝗻 𝗖𝗵𝗲̂́𝘁 𝗖𝗵𝗼 𝗕𝗮̣𝗻 ${coinsdd}$`; await Currencies.increaseMoney(event.senderID, parseInt(coinsdd)); break;
+        case "6": msg = `𝗕𝗮̣𝗻 𝗩𝘂̛̀𝗮 𝗖𝗵𝗲̂́ 𝗧𝗮̣𝗼 ${work6} 𝗩𝗮̀ 𝗧𝗵𝘂 𝗩𝗲̂̀ ${coinsdd1}$`; await Currencies.increaseMoney(event.senderID, parseInt(coinsdd1)); break;
+        case "7": msg = `𝗕𝗮̣𝗻 𝗚𝗶𝗲̂́𝘁 𝗖𝗵𝗲̂́𝘁 ${work7} 𝗩𝗮̀ 𝗧𝗵𝘂 𝗩𝗲̂̀ ${coinsex2}$`; await Currencies.increaseMoney(event.senderID, parseInt(coinsex2)); break;
+        case "8": msg = `𝗕𝗮̣𝗻 𝗞𝗵𝗮𝗶 𝗧𝗵𝗮́𝗰 ${work8} 𝗩𝗮̀ 𝗞𝗶𝗲̂́𝗺 𝗩𝗲̂̀ ${coinsktf}$`; await Currencies.increaseMoney(event.senderID, parseInt(coinsktf)); break;
+      };
+      const choose = parseInt(event.body);
+      if (isNaN(event.body)) return api.sendMessage("𝐕𝐮𝐢 𝐥𝐨̀𝐧𝐠 𝐧𝐡𝐚̣̂𝐩 𝟏 𝐜𝐨𝐧 𝐬𝐨̂́", event.threadID, event.messageID);
+      if (choose > 9 || choose < 1) return api.sendMessage("𝐋𝐮̛̣𝐚 𝐜𝐡𝐨̣𝐧 𝐤𝐡𝐨̂𝐧𝐠 𝐧𝐚̆̀𝐦 𝐭𝐫𝐨𝐧𝐠 𝐝𝐚𝐧𝐡 𝐬𝐚́𝐜𝐡", event.threadID, event.messageID); //thay số case vào số 7
+      api.unsendMessage(handleReply.messageID);
+      if (msg == "𝐔𝐩𝐝𝐚𝐭𝐞 𝐖𝐨𝐫𝐤") {
+        msg = "𝐍𝐨 𝐓𝐢𝐦𝐞 𝐔𝐩𝐝𝐚𝐭𝐞";
+      };
+      return api.sendMessage(`${msg}`, threadID, async () => {
+        data.work2Time = Date.now();
+        await Currencies.setData(senderID, { data });
+
+      });
+
+    };
   }
-  break;
-  case "2": {
-  var rdchim = ['Chim vàng anh','Chim sơn ca','Chim chìa vôi','Chim chào mào','chim cánh cụt','Chim yến phụng','Chim khướu','Chim họa mi','Chim công','Chim sáo','Chim vẹt cảnh','Chim cu gáy','Chim phượng hoàng đất','Chim ói cá','Chim sả rừng','Chim bạc má','Chim hồng hạc','Chim thiên đường','Chim giẻ cùi xanh','Chim kim tước','Chim vành khuyên','Chim trĩ vàng','Chim sẻ đất màu','Chim uyên ương','Chim ruồi'];
-  var linkMap = {
-  'Chim vàng anh': 'https://i.imgur.com/IODFTZT.png',
-  'Chim sơn ca': 'https://i.imgur.com/w18NZ0j.png',
-  'Chim chìa vôi': 'https://i.imgur.com/F9t6wIM.png',
-  'Chim chào mào': 'https://i.imgur.com/hAjDBb4.png',
-  'chim cánh cụt': 'https://i.imgur.com/nYZAo1n.png',
-  'Chim yến phụng': 'https://i.imgur.com/w1JpOnb.png',
-  'Chim khướu': 'https://i.imgur.com/zq6Uh8i.png',
-  'Chim họa mi': 'https://i.imgur.com/2HrqZMw.png',
-  'Chim công': 'https://i.imgur.com/KwiSalh.png',
-  'Chim sáo': 'https://i.imgur.com/kQHM2QU.png',
-  'Chim vẹt cảnh': 'https://i.imgur.com/AJfELUD.png',
-  'Chim cu gáy': 'https://i.imgur.com/IT0zskz.png',
-  'Chim phượng hoàng đất': 'https://i.imgur.com/8v1reJo.png',
-  'Chim ói cá': 'https://i.imgur.com/ZUajQh3.png',
-  'Chim sả rừng': 'https://i.imgur.com/kkzif3R.png',
-  'Chim bạc má': 'https://i.imgur.com/kySrcN8.png',
-  'Chim hồng hạc': 'https://i.imgur.com/8KgmIkT.png',
-  'Chim thiên đường': 'https://i.imgur.com/Xit2eQw.png',
-  'Chim giẻ cùi xanh': 'https://i.imgur.com/TKFlqDB.png',
-  'Chim kim tước': 'https://i.imgur.com/LibmANo.png',
-  'Chim vành khuyên': 'https://i.imgur.com/Uvc8Kes.png',
-  'Chim trĩ vàng': 'https://i.imgur.com/U29bnyV.png',
-  'Chim sẻ đất màu': 'https://i.imgur.com/R21fpw9.png',
-  'Chim uyên ương': 'https://i.imgur.com/bErM6kt.png',
-  'Chim ruồi': 'https://i.imgur.com/bjI60RY.png'
-  };
-  var work2 = rdchim[Math.floor(Math.random() * rdchim.length)];
-  var link = linkMap[work2];
-  var coins2 = Math.floor(Math.random() * 10000000000000000000000000000) + 100;
-  await o.Currencies.increaseMoney(h.author, coins2);
-  var image = ["https://i.imgur.com/xRsawOT.gif", "https://i.imgur.com/72o6Mur.gif"]
-  send({ body: 'Đang Bắn Chim...', attachment: (await require("axios").get(image[Math.floor(Math.random() * image.length)], { responseType: "stream"})).data }, async () => send({ body: `Chúc mừng ${h.name_author} đã bắn dính ${work2} và nhận thêm được ${coins2}₫ vào ví`, attachment: (await require("axios").get(link, { responseType: "stream"})).data }, async() => {
-  data["workTime"] ? data["workTime"] : data["workTime"] = {}
-  data["workTime"][h.author] = Date.now()
-  await o.Threads.setData(t, { data })
-  global.data.threadData.set(t, data)
-  }))
-} 
-  break;
-  case "3": {
-  var rdst = ['Hổ','Sư tử','Voi','Hươu','Khỉ','Gấu','Hải cẩu', 'Hải âu', 'Chó', 'Mèo', 'Lợn', 'Gà','Chồn','Dúi'];
-  var linkMap = {
-  'Hổ': 'https://i.imgur.com/HoheUlc.png',
-  'Sư tử': 'https://i.imgur.com/CUWGb3y.png',
-  'Voi': 'https://i.imgur.com/hxKcKKw.png',
-  'Hươu': 'https://i.imgur.com/KW6qlDJ.png',
-  'Khỉ': 'https://i.imgur.com/dIfRB8i.png',
-  'Gấu': 'https://i.imgur.com/Vhi7U57.png',
-  'Gấu nâu': 'https://i.imgur.com/rm1EPHp.jpeg',
-  'Hải cẩu': 'https://i.imgur.com/f3qPRFx.jpeg',
-  'Hải âu': 'https://i.imgur.com/esdBcdc.jpeg',
-  'Chó': 'https://i.imgur.com/jSLrQju.jpeg',
-  'Mèo': 'https://i.imgur.com/D3xGABL.jpeg',
-  'Lợn': 'https://i.imgur.com/Mi65tBI.jpeg',
-  'Gà': 'https://i.imgur.com/zeZBOpo.jpeg',
-  'Chồn': 'https://i.imgur.com/zdwr15i.jpeg',
-  'Dúi': 'https://i.imgur.com/yGl4za2.jpeg'
-  };
-  var work3 = rdst[Math.floor(Math.random() * rdst.length)];
-  var link = linkMap[work3];
-  var coins3 = Math.floor(Math.random() * 10000000000000000000000000000) + 400;
-  await o.Currencies.increaseMoney(h.author, coins3);
-  var image = ["https://i.imgur.com/aKy5VGW.gif","https://i.imgur.com/naUMa61.gif","https://i.imgur.com/KUjTvpc.gif"]
-  send({ body: 'Đang Săn Thú...', attachment: (await require("axios").get(image[Math.floor(Math.random() * image.length)], { responseType: "stream"})).data }, async () => send({ body: `Chúc mừng ${h.name_author} đã săn được ${work3} và húp thêm được ${coins3}₫ vào ví`, attachment: (await require("axios").get(link, { responseType: "stream"})).data }, async() => {
-  data["workTime"] ? data["workTime"] : data["workTime"] = {}
-  data["workTime"][h.author] = Date.now()
-  await o.Threads.setData(t, { data })
-  global.data.threadData.set(t, data)
-  }))
+}
+module.exports.run = async ({ event, api, handleReply, Currencies, getText }) => {
+  const { threadID, messageID, senderID } = event;
+  const cooldown = global.configModule[this.config.name].cooldownTime;
+  let data = (await Currencies.getData(senderID)).data || {};
+  //cooldownTime cho mỗi lần nhận 
+  if (typeof data !== "undefined" && cooldown - (Date.now() - data.work2Time) > 0) {
+
+    var time = cooldown - (Date.now() - data.work2Time),
+      minutes = Math.floor(time / 40000),
+      seconds = ((time % 1000) / 1000).toFixed(0);
+    return api.sendMessage(getText("cooldown", minutes, (seconds < 10 ? "0" + seconds : seconds)), event.threadID, event.messageID);
   }
-  break;
-  case "4": {
-  var rdna = ['Phở','Chả cá','Bánh xèo','Rau muống','Nem rán/chả giò','Gỏi cuốn','Bún bò Huế','Gà nướng','Bánh cuốn','Pizza','Caesar salad','Hamburger bò phô mai','Khoai tây nghiền','Mỳ Ý sốt cà chua bò bằm - mì sốt spaghetti','Khoai tây đút lò','Bò hầm rau củ kiểu Pháp','Cá hồi sốt chanh dây'];
-  var linkMap = {
-  'Phở': 'https://i.imgur.com/uPYXvsq.png',
-  'Chả cá': 'https://i.imgur.com/kO3xF0x.png',
-  'Bánh xèo': 'https://i.imgur.com/NqO1eLY.png',
-  'Rau muống': 'https://i.imgur.com/NHrlJpQ.jpeg',
-  'Nem rán/chả giò': 'https://i.imgur.com/8kIUE7d.jpeg',
-  'Gỏi cuốn': 'https://i.imgur.com/5vPbIQX.jpeg',
-  'Bún bò Huế': 'https://i.imgur.com/WmsyFxP.jpeg',
-  'Gà nướng': 'https://i.imgur.com/wap9yXx.jpeg',
-  'Bánh cuốn': 'https://i.imgur.com/9uWffvI.png',
-  'Pizza': 'https://i.imgur.com/DXCUkfH.jpeg',
-  'Caesar salad': 'https://i.imgur.com/VYTcz1U.jpeg',
-  'Hamburger bò phô mai': 'https://i.imgur.com/rJLL2xy.jpeg',
-  'Khoai tây nghiền': 'https://i.imgur.com/qXXpmie.jpeg',
-  'Mỳ Ý sốt cà chua bò bằm - mì sốt spaghetti': 'https://i.imgur.com/PhlIgh1.jpeg',
-  'Khoai tây đút lò': 'https://i.imgur.com/YpVQM3H.jpeg',
-  'Bò hầm rau củ kiểu Pháp': 'https://i.imgur.com/cRkmyUX.jpeg',
-  'Cá hồi sốt chanh dây': 'https://i.imgur.com/BiTtiNO.jpeg'
-  };
-  var work4 = rdna[Math.floor(Math.random() * rdna.length)];
-  var link = linkMap[work4];
-  var coins4 = Math.floor(Math.random() * 10000000000000000000000000000) + 90;
-  var image = "https://i.imgur.com/Tptoq8D.gif"
-  send({ body: 'Đang Nấu Ăn...', attachment: (await require("axios").get(image, { responseType: "stream"})).data }, async () => send({ body: `Chúc mừng ${h.name_author} đã nấu được món ${work4} và nhận được ${coins4}₫ vào ví`, attachment: (await require("axios").get(link, { responseType: "stream"})).data }, async() => {
-  data["workTime"] ? data["workTime"] : data["workTime"] = {}
-  data["workTime"][h.author] = Date.now()
-  await o.Threads.setData(t, { data })
-  global.data.threadData.set(t, data)
-  }))
-  }
-  break;
-  case "5": {
-  var rdcc = ['Gỗ sồi','Gỗ bạch dương','Gỗ keo','Gỗ vân sam','Gỗ lim','Gỗ sưa','Gỗ hương','Gỗ mun','Gỗ gụ','Gỗ trắc','Gỗ cẩm','Gỗ cẩm lai','Gỗ nghiến','Gỗ mít','Gỗ xoan đào'];
-  var linkMap = {
-  'Gỗ sồi': 'https://i.imgur.com/H8HXVwa.png',
-  'Gỗ bạch dương': 'https://i.imgur.com/xw29rr9.png',
-  'Gỗ keo': 'https://i.imgur.com/smfz1AY.png',
-  'Gỗ vân sam': 'https://i.imgur.com/qWiVr6v.png',
-  'Gỗ lim': 'https://i.imgur.com/K7Pd5eF.png',
-  'Gỗ sưa': 'https://i.imgur.com/daiGbSc.png',
-  'Gỗ hương': 'https://i.imgur.com/UlJGcnW.png',
-  'Gỗ mun': 'https://i.imgur.com/1Sidihg.png',
-  'Gỗ gụ': 'https://i.imgur.com/cTgBIzh.png',
-  'Gỗ trắc': 'https://i.imgur.com/y8O8hqL.png',
-  'Gỗ cẩm': 'https://i.imgur.com/G7kbTYu.png',
-  'Gỗ cẩm lai': 'https://i.imgur.com/ihXPbsl.png',
-  'Gỗ nghiến': 'https://i.imgur.com/b2DWVg5.png',
-  'Gỗ mít': 'https://i.imgur.com/viKR8TG.png',
-  'Gỗ xoan đào': 'https://i.imgur.com/AC8eush.png'
-  };
-  var work5 = rdcc[Math.floor(Math.random() * rdcc.length)];
-  var link = linkMap[work5];
-  var coins5 = Math.floor(Math.random() * 10000000000000000000000000000) + 500;
-  await o.Currencies.increaseMoney(h.author, coins5);
-  var image = ["https://i.imgur.com/706Rr8j.gif" , "https://i.imgur.com/EN15fDe.gif"]
-  send({ body: 'Đang Chặt Cây...', attachment: (await require("axios").get(image[Math.floor(Math.random * image.length)], { responseType: "stream"})).data }, async () => send({ body: `Chúc mừng ${h.name_author} đã chặt được ${work5} và bú thêm được ${coins5}₫ vào ví`, attachment: (await require("axios").get(link, { responseType: "stream"})).data }, async() => {
-  data["workTime"] ? data["workTime"] : data["workTime"] = {}
-  data["workTime"][h.author] = Date.now()
-  await o.Threads.setData(t, { data })
-  global.data.threadData.set(t, data)
-  }))
-  }
-  break;
-  case "6": {
-  var rdtc = ['Cây lúa nước','Cây ngô','Cây khoai tây','Cây lúa mì','Cây sắn','Cây khế','Cây đại mạch','Cây khoai lang','Cây mía','Cây lạc','Cây đậu tương','Cây đậu xanh','Cây bông gòn','Cây vừng ( cây mè)','Cây thuốc lào/thuốc lá','Cây dứa (trái thơm)','Cây đu đủ','Cây cà chua', 'Cây cam', 'Cây quýt', 'Cây bưởi', 'Cây táo', 'Cây chôm chôm', 'Cây dưa hấu', 'Cây nhãn', 'Cây vải'];
-  var linkMap = {
-  'Cây mía': 'https://i.imgur.com/IaHFRhC.png',
-  'Cây lạc': 'https://i.imgur.com/D46xKnp.png',
-  'Cây đậu tương': 'https://i.imgur.com/dMnOCOi.png',
-  'Cây đậu xanh': 'https://i.imgur.com/xi3OnHj.png',
-  'Cây bông gòn': 'https://i.imgur.com/MHcQuwu.png',
-  'Cây vừng ( cây mè)': 'https://i.imgur.com/xPoe97R.png',
-  'Cây thuốc lào/thuốc lá': 'https://i.imgur.com/aAzpc64.png',
-  'Cây dứa (trái thơm)': 'https://i.imgur.com/mZCJt7I.png',
-  'Cây đu đủ': 'https://i.imgur.com/vacca7H.png',
-  'Cây lúa nước': 'https://i.imgur.com/1uvraj4.png',
-  'Cây ngô': 'https://i.imgur.com/8us4Zxb.png',
-  'Cây khoai tây': 'https://i.imgur.com/Ld1VqaR.png',
-  'Cây lúa mì': 'https://i.imgur.com/DycGgOY.png',
-  'Cây sắn': 'https://i.imgur.com/c78qbES.png',
-  'Cây khế': 'https://i.imgur.com/Y5GUGmV.png',
-  'Cây đại mạch': 'https://i.imgur.com/JmNnwQC.png',
-  'Cây khoai lang': 'https://i.imgur.com/pnyKcbF.png',
-  'Cây cà chua': 'https://i.imgur.com/LCBH1rf.jpeg',
-  'Cây cam': 'https://i.imgur.com/M9ZMwX2.jpeg',
-  'Cây quýt': 'https://i.imgur.com/Dv9rA98.jpeg',
-  'Cây bưởi': 'https://i.imgur.com/HJP06Ub.jpeg',
-  'Cây táo': 'https://i.imgur.com/TSPTQaT.jpeg',
-  'Cây chôm chôm': 'https://i.imgur.com/DKQa37x.jpeg',
-  'Cây dưa hấu': 'https://i.imgur.com/SuB8ExQ.jpg',
-  'Cây nhãn': 'https://i.imgur.com/XPwap6p.jpeg',
-  'Cây vải': 'https://i.imgur.com/ViiNwUP.jpeg'
-  };
-  var work6 = rdtc[Math.floor(Math.random() * rdtc.length)];
-  var link = linkMap[work6];
-  var coins6 = Math.floor(Math.random() * 10000000000000000000000000000) + 1000;
-  await o.Currencies.increaseMoney(h.author, coins6);
-  var image = "https://i.imgur.com/HHBF6Yy.gif"
-  send({ body: 'Đang Trồng Cây...', attachment: (await require("axios").get(image, { responseType: "stream"})).data }, async () => send({ body: `Chúc mừng ${h.name_author} đã trồng được ${work6} và bán được ${coins6}₫ và nhận vào ví`, attachment: (await require("axios").get(link, { responseType: "stream"})).data }, async() => {
-  data["workTime"] ? data["workTime"] : data["workTime"] = {}
-  data["workTime"][h.author] = Date.now()
-  await o.Threads.setData(t, { data })
-  global.data.threadData.set(t, data)
-  }))
-  }
-  break;
-  case "7": {
-  var rddd = ['Đồng', 'Chì', 'Vàng', 'Kẽm',' Sắt', 'Nhôm', 'Thiếc','Mangan','Đá vôi', 'Đất sét', 'Cát','Ngọc thạch anh','Kim cương','Ngọc lục bảo', 'Hồng ngọc','Đá mã não','Saphia'];
-  var linkMap = {
-  'Đồng': 'https://i.imgur.com/EghuDew.png',
-  'Chì': 'https://i.imgur.com/SuHXtP1.png',
-  'Vàng': 'https://i.imgur.com/cxTORIe.png',
-  'Kẽm': 'https://i.imgur.com/MujYEyd.png',
-  'Sắt': 'https://i.imgur.com/yD5IrG4.png',
-  'Nhôm': 'https://i.imgur.com/NJcNYCX.png',
-  'Thiếc': 'https://i.imgur.com/yInlgHh.png',
-  'Mangan': 'https://i.imgur.com/uyGmRwE.png',
-  'Đá vôi': 'https://i.imgur.com/WXaxHot.png',
-  'Đất sét': 'https://i.imgur.com/Nlh30Lf.png',
-  'Cát': 'https://i.imgur.com/DtOq5hX.png',
-  'Ngọc thạch anh': 'https://i.imgur.com/oJoN0j7.png',
-  'Kim cương': 'https://i.imgur.com/69QZHLQ.png',
-  'Ngọc lục bảo': 'https://i.imgur.com/DJzj1EN.png',
-  'Hồng ngọc': 'https://i.imgur.com/lsXUHeJ.png',
-  'Đá mã não': 'https://i.imgur.com/bGcW9bN.png',
-  'Saphia': 'https://i.imgur.com/JBOaVEW.png'
-  };
-  var work7 = rddd[Math.floor(Math.random() * rddd.length)];
-  var link = linkMap[work7];
-  var coins7 = Math.floor(Math.random() * 10000000000000000000000000000) + 420;
-  await o.Currencies.increaseMoney(h.author, coins7);
-  var image = "https://i.imgur.com/HHzSQSE.gif"
-  send({ body: 'Đang Đào Đá...', attachment: (await require("axios").get(image, { responseType: "stream"})).data }, async () => send({ body: `Chúc mừng ${h.name_author} đã đào được ${work7} và bán nhận về được ${coins7}₫ vào ví`, attachment: (await require("axios").get(link, { responseType: "stream"})).data }, async() => {
-  data["workTime"] ? data["workTime"] : data["workTime"] = {}
-  data["workTime"][h.author] = Date.now()
-  await o.Threads.setData(t, { data })
-  global.data.threadData.set(t, data)
-  }))
-  }
-  break;
-  case "8": {
-  var rdt = ["Thùng carton", "Thùng phi", "Thùng sơn", "Thùng nhựa", "Thùng gạo", "Thùng sắt", "Thùng bia", "Thùng nước", "Thùng nuôi cá", "Thùng rác", "Thùng dữ nhiệt", "Thùng xốp", "Thùng nước ngọt", "Thùng contender", "Thùng mì"];
-  var linkMap = {
-  "Thùng carton": "https://i.imgur.com/Rv3F13u.jpeg",
-  "Thùng phi": "https://i.imgur.com/3XK7J4r.jpeg",
-  "Thùng sơn": "https://i.imgur.com/9kQB6QF.jpeg",
-  "Thùng nhựa": "https://i.imgur.com/JUcaHDq.jpeg",
-  "Thùng gạo": "https://i.imgur.com/TxKZP6C.jpeg",
-  "Thùng sắt": "https://i.imgur.com/HFPSKX0.jpeg",
-  "Thùng bia": "https://i.imgur.com/yNymW9i.jpeg",
-  "Thùng nước": "https://i.imgur.com/WVPFdYx.jpeg",
-  "Thùng nuôi cá": "https://i.imgur.com/55Etztj.jpeg",
-  "Thùng rác": "https://i.imgur.com/9AHLg26.jpeg",
-  "Thùng dữ nhiệt": "https://i.imgur.com/R3Z8DWX.jpeg",
-  "Thùng xốp": "https://i.imgur.com/8rjxtXU.jpeg",
-  "Thùng nước ngọt": "https://i.imgur.com/hqDTCxA.jpeg",
-  "Thùng contender": "https://i.imgur.com/TlkGrJ7.jpeg",
-  "Thùng mì": "https://i.imgur.com/CJw9Sid.jpeg",
-  }
-  var work8 = rdt[Math.floor(Math.random() * rdt.length)];
-  var link = linkMap[work8];
-  var coins8 = Math.floor(Math.random() * 10000000000000000000000000000) + 500;
-  await o.Currencies.increaseMoney(h.author, coins8);
-  var image = "https://imgur.com/0eCG0xf.gif"
-  send({ body: 'Đang Kéo thùng...', attachment: (await require("axios").get(image, { responseType: "stream"})).data }, async () => send({ body: `Chúc mừng ${h.name_author} đã kéo được ${work8} và bán nhận về được ${coins8}₫ vào ví`, attachment: (await require("axios").get(link, { responseType: "stream"})).data }, async() => {
-  data["workTime"] ? data["workTime"] : data["workTime"] = {}
-  data["workTime"][h.author] = Date.now()
-  await o.Threads.setData(t, { data })
-  global.data.threadData.set(t, data)
-  }))
-  }
-  break;
-  default: const choose = parseInt(b);
-  if (isNaN(b)) return send("𝗩𝘂𝗶 𝗹𝗼̀𝗻𝗴 𝗰𝗵𝗼̣𝗻 𝟭 𝗰𝗼𝗻 𝘀𝗼̂́");
-  if (choose > 8 || choose < 1) return send("𝗟𝘂̛̣𝗮 𝗰𝗵𝗼̣𝗻 𝗸𝗵𝗼̂𝗻𝗴 𝗻𝗮̆̀𝗺 𝘁𝗿𝗼𝗻𝗴 𝗱𝗮𝗻𝗵 𝘀𝗮́𝗰𝗵."); 
+  else {
+    return api.sendMessage("💸== 𝐊𝐢𝐞̂́𝐦 𝐓𝐢𝐞̂̀𝐧 𝐎𝐧𝐥𝐢𝐧𝐞 ==💸" +
+      "\n\n1.⚔️ 𝗕𝗮̆́𝗻 𝗙𝗿𝗲𝗲 𝗙𝗶𝗿𝗲" +
+      "\n2.🏢 𝗟𝗮̀𝗺 𝗧𝗵𝘂𝗲̂" +
+      "\n3.🪵 𝗖𝗵𝗮̣̆𝘁 𝗚𝗼̂̃" +
+      "\n4.🛠️ 𝗥𝗲̀𝗻 𝗞𝗶𝗲̂́𝗺" +
+      "\n5.📑 𝗧𝗵𝘂̛̉ 𝗧𝗵𝗮́𝗰𝗵" +
+      "\n6.⚒️ 𝗥𝗲̀𝗻 𝗚𝗶𝗮́𝗽" +
+      "\n7.🗡️ 𝗚𝗶𝗲̂́𝘁  𝗡𝗴𝘂̛𝗼̛̀𝗶🤦" +
+      "\n8.⛏️ 𝗞𝗵𝗮𝗶 𝗧𝗵𝗮́𝗰" +
+      "\n\n𝗛𝗮̃𝘆 𝗿𝗲𝗽𝗹𝘆 𝘁𝗶𝗻 𝗻𝗵𝗮̆́𝗻 𝘃𝗮̀ 𝗰𝗵𝗼̣𝗻 𝘁𝗵𝗲𝗼 𝘀𝗼̂́" //thêm hiển thị case tại đây ||  \n[number]. [Ngành nghề]" +
+      , event.threadID, (error, info) => {
+        data.work2Time = Date.now();
+        global.client.handleReply.push({
+          type: "choosee",
+          name: this.config.name,
+          author: event.senderID,
+          messageID: info.messageID
+        })
+      })
   }
 }

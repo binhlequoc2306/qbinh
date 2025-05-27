@@ -2,9 +2,9 @@ module.exports.config = {
 	name: "admin",
 	version: "1.0.5",
 	hasPermssion: 0,
-	credits: "Mirai Team & mod by DongDev",
+	credits: "Mirai Team & mod by Hphong",
 	description: "Bật tắt chế độ chỉ qtv dùng lệnh",
-	commandCategory: "Người dùng",
+	commandCategory: "Box chat",
 	usages: "Bật tắt chế độ chỉ admin và qtv dùng lệnh",
     cooldowns: 0,
     usePrefix: false,
@@ -15,18 +15,21 @@ module.exports.config = {
 };
 
 module.exports.languages = {
-      "vi": {
-        "notHavePermssion": '⚠️ Bạn không đủ quyền hạn để có thể sử dụng chức năng "%1"',
-        "addedNewAdmin": '[ ADD NEW ADMIN ]\n────────────────────\n📝 Thêm thành công %1 người dùng trở thành admin bot\n\n%2\n────────────────────\n[⏰] → Time: %3',
-        "removedAdmin": '[ REMOVE ADMIN ]\n────────────────────\n📝 Gỡ thành công %1 người dùng trở lại làm thành viên\n\n%2\n────────────────────\n[⏰] → Time: %3'
-    },
-    "en": {
-        "listAdmin": '[Admin] Admin list: \n\n%1',
-        "notHavePermssion": '[Admin] You have no permission to use "%1"',
-        "addedNewAdmin": '[Admin] Added %1 Admin :\n\n%2',
-        "removedAdmin": '[Admin] Remove %1 Admin:\n\n%2'
-    }
-}
+  "vi": {
+    "notHavePermssion": '⚠️ Bạn không đủ quyền hạn để có thể sử dụng chức năng "%1"',
+    "addedNewAdmin": '[ ADD NEW ADMIN ]\n────────────────────\n📝 Thêm thành công %1 người dùng trở thành admin bot\n\n%2\n────────────────────\n[⏰] → Time: %3',
+    "removedAdmin": '[ REMOVE ADMIN ]\n────────────────────\n📝 Gỡ thành công %1 người dùng trở lại làm thành viên\n\n%2\n────────────────────\n[⏰] → Time: %3',
+    "adminsupport": '[ ADD NEW SUPPORT PERSON ]\n────────────────────\n📝 Thêm thành công %1 người dùng trở thành người thuê bot\n\n%2\n────────────────────\n[⏰] → Time: %3',
+    "resp": '[ REMOVE SUPPORT PERSON ]\n────────────────────\n📝 Gỡ thành công %1 người dùng trở thành người thuê bot\n\n%2\n────────────────────\n[⏰] → Time: %3'
+  },
+  "en": {
+    "listAdmin": '[Admin] Admin list: \n\n%1',
+    "listNDH": `[Người Thuê Bot] •\n\n%1`,
+    "notHavePermssion": '[Admin] You have no permission to use "%1"',
+    "addedNewAdmin": '[Admin] Added %1 Admin :\n\n%2',
+    "removedAdmin": '[Admin] Remove %1 Admin:\n\n%2'
+  }
+};
 module.exports.onLoad = function() {
     const { writeFileSync, existsSync } = require('fs-extra');
     const { resolve } = require("path");
@@ -46,7 +49,7 @@ module.exports.run = async function ({ api, event, args, Users, permssion, getTe
   const fs = require("fs-extra");
   const axios = require("axios");
   const moment = require("moment-timezone");
-  const gio = moment.tz("Asia/Ho_Chi_Minh").format("DD/MM/YYYY - HH:mm:ss");
+  const gio = moment.tz("Asia/Ho_Chi_Minh").format("DD/MM/YYYY || HH:mm:ss");
   const nd = await Users.getNameUser(event.senderID);
   const { PREFIX } = global.config;
   const { threadID, messageID, mentions, senderID } = event;
@@ -70,7 +73,7 @@ module.exports.run = async function ({ api, event, args, Users, permssion, getTe
   const pref = threadSetting.PREFIX || PREFIX;
   const content = args.slice(1, args.length);
     if (args.length == 0) 
-    return api.sendMessage(`[ ADMIN CONFIG SETTING ]\n──────────────────\n${pref}admin add: thêm người dùng làm admin\n${pref}admin remove: gỡ vai trò admin\n${pref}admin list: xem danh sách admin\n${pref}admin qtvonly: bật/tắt chế độ quản trị viên\n${pref}admin only: bật/tắt chế độ vô cực\n${pref}admin echo: bot sẽ trả về câu mà bạn nói\n${pref}admin fast: xem tốc độ mạng của bot\n${pref}admin create [tên mdl]: tạo file mới trong commands\n${pref}admin del [tên mdl]: xoá file trong commands\n${pref}admin rename [tên mdl] => [tên muốn đổi]: đổi tên file trong commands\n${pref}admin ping: xem tốc độ phản hồi của bot\n${pref}admin offbot: tắt bot\n${pref}admin reload [time]: reset hệ thống bot\n${pref}admin resetmoney: reset toàn bộ tiền trên hệ thống bot\n${pref}admin ship [tên mdl]: gửi 1 mdl cho thành viên trong nhóm\n──────────────────\n📝 HDSD: ${pref}admin + [text] lệnh cần dùng`, event.threadID, event.messageID);
+    return api.sendMessage({body:`[ ADMIN CONFIG SETTING ]\n──────────────────\n${pref}admin add: thêm người dùng làm admin\n${pref}admin remove: gỡ vai trò admin\n${pref}admin sp: thêm người dùng làm người thuê bot\n${pref}admin resp: gỡ người thuê bot\n${pref}admin list: xem danh sách admin\n${pref}admin qtvonly: bật/tắt chế độ quản trị viên\n${pref}admin only: bật/tắt chế độ vô cực\n${pref}admin echo: bot sẽ trả về câu mà bạn nói\n${pref}admin fast: xem tốc độ mạng của bot\n${pref}admin create [tên mdl]: tạo file mới trong commands\n${pref}admin del [tên mdl]: xoá file trong commands\n${pref}admin rename [tên mdl] => [tên muốn đổi]: đổi tên file trong commands\n${pref}admin ping: xem tốc độ phản hồi của bot\n${pref}admin offbot: tắt bot\n${pref}admin reload [time]: reset hệ thống bot\n${pref}admin resetmoney: reset toàn bộ tiền trên hệ thống bot\n${pref}admin ship [tên mdl]: gửi 1 mdl cho thành viên trong nhóm\n──────────────────\n👤 Người dùng: ${nd}\n⏰ Time: ${gio}`,attachment: global.khanhdayr.splice(0, 1)}, event.threadID, event.messageID);
     const { ADMINBOT } = global.config;
     const { NDH } = global.config;
     const { userName } = global.data;
@@ -80,65 +83,36 @@ module.exports.run = async function ({ api, event, args, Users, permssion, getTe
     delete require.cache[require.resolve(configPath)];
     var config = require(configPath);
 switch (args[0]) {
-        case "list": {
-    var i = 1;
+  case "list": {
     var msg = [];
-    const listAdmin = config.ADMINBOT || [];
+    listAdmin = ADMINBOT || config.ADMINBOT || [];
     let count = 1;
-    
-    // Duyệt qua danh sách admin và tạo tin nhắn hiển thị
+
     for (const idAdmin of listAdmin) {
-        if (parseInt(idAdmin)) {
-            const name = (await Users.getData(idAdmin)).name;
-            msg.push(`${count}. 👤: ${name}\n📎 Link: fb.com/${idAdmin}`);
-            count++;
-        }
+      if (parseInt(idAdmin)) {
+        const name = (await Users.getData(idAdmin)).name;
+        msg.push(`${count}. 👤: ${name}\n📎 Link: fb.com/${idAdmin}`);
+        count++;
+      }
     }
 
-    // Gửi danh sách admin và thông báo phản hồi để xóa
-    api.sendMessage(`[ Người Điều Hành Bot ]\n──────────────────\n👤 Name: ${global.config.ADMIN_NAME}\n📎 Facebook: ${global.config.FACEBOOK_ADMIN}\n📩 Admin Dang Gia Khanh project\n──────────────────\n\n[ ADMIN BOT ]\n──────────────────\n${msg.join("\n")}\n──────────────────\n👤 Người dùng: ${nd}\n⏰ Time: ${gio}\n\nHãy trả lời tin nhắn này với các số thứ tự để xóa ID admin tương ứng (VD: "1 2 3").`, event.threadID, (error, info) => {
-        if (!error) {
-            global.client.handleReply.push({
-                name: "deleteAdmin",
-                messageID: info.messageID,
-                author: event.senderID,
-                type: 'replyToDeleteAdmin',
-                data: { listAdmin }
-            });
-        }
-    });
+    var msg1 = [];
+    listNDH = NDH || config.NDH || [];
+    count = 1;  // Reset count for NDH
 
-    // Xử lý khi có tin nhắn trả lời để xóa admin
-    api.listenMqtt((err, message) => {
-        const replyData = global.client.handleReply.find(r => r.name === "deleteAdmin" && r.messageID === message.messageReply?.messageID);
+    for (const idNDH of listNDH) {
+      if (parseInt(idNDH)) {
+        const name = (await Users.getData(idNDH)).name;
+        msg1.push(`${count}. 👤: ${name}\n📎 Link: fb.com/${idNDH}`);
+        count++;
+      }
+    }
 
-        if (replyData && replyData.author === message.senderID) {
-            const indices = message.body.split(" ").map(num => parseInt(num) - 1).filter(index => !isNaN(index) && index >= 0 && index < replyData.data.listAdmin.length);
-            const idsToDelete = indices.map(index => replyData.data.listAdmin[index]);
-
-            if (idsToDelete.length > 0) {
-                // Xóa các ID admin từ danh sách
-                idsToDelete.forEach(id => {
-                    const index = replyData.data.listAdmin.indexOf(id);
-                    if (index > -1) replyData.data.listAdmin.splice(index, 1);
-                });
-
-                api.sendMessage(`Đã xóa các admin với ID: ${idsToDelete.join(", ")}`, message.threadID, message.messageID);
-
-                // Cập nhật danh sách admin trong config và lưu vào file cấu hình
-                config.ADMINBOT = replyData.data.listAdmin;
-                writeFileSync(configPath, JSON.stringify(config, null, 4), 'utf8');
-            } else {
-                api.sendMessage("Không tìm thấy số thứ tự hợp lệ!", message.threadID, message.messageID);
-            }
-        }
-    });
-
+    api.sendMessage({body:`[ Người Điều Hành Bot ]\n──────────────────\n👤 Name: ${global.config.ADMIN_NAME}\n📎 Facebook: ${global.config.FACEBOOK_ADMIN}\n📩 Email: dop609950@gmail.com\n──────────────────\n\n[ ADMIN BOT ]\n──────────────────\n${msg.join("\n")}\n──────────────────\n👤 Người dùng: ${nd}\n[ Người Thuê Bot ]\n──────────────────\n${msg1.join("\n")}\n──────────────────\n👤 Người dùng: ${nd}\n⏰ Time: ${gio}`,attachment: global.khanhdayr.splice(0, 1)}, event.threadID, event.messageID);
     break;
-}
+  }
             case "add": { 
-            if (event.senderID != 100085073240621) return api.sendMessage(`⚠️ Cần quyền admin chính để thực hiện lệnh`, event.threadID, event.messageID)
-            if (permssion != 3) return api.sendMessage(getText("notHavePermssion", "add"), threadID, messageID);
+            if (permssion != 3) return msg.reply("❎ Bạn không có quyền sử dụng lệnh này");
             if(event.type == "message_reply") { content[0] = event.messageReply.senderID }
             if (mention.length != 0 && isNaN(content[0])) {
                 var listAdd = [];
@@ -163,8 +137,7 @@ switch (args[0]) {
         case "removeAdmin":
         case "rm":
         case "delete": {
-            if (event.senderID != 100085073240621) return api.sendMessage(`⚠️ Cần quyền Admin để thực hiện lệnh`, event.threadID, event.messageID)
-            if (permssion != 3) return api.sendMessage(getText("notHavePermission", "removeAdmin", gio), threadID, messageID);
+            if (permssion != 3) return msg.reply("❎ Bạn không có quyền sử dụng lệnh này");
             if(event.type == "message_reply") { content[0] = event.messageReply.senderID }
             if (mentions.length != 0 && isNaN(content[0])) {
                 const mention = Object.keys(mentions);
@@ -190,6 +163,57 @@ switch (args[0]) {
             }
             else throwError(this.config.name, threadID, messageID);
                                                }
+                                               case "sp": { 
+                                                if (permssion != 3) return msg.reply("❎ Bạn không có quyền sử dụng lệnh này");
+                                                if(event.type == "message_reply") { content[0] = event.messageReply.senderID }
+                                                if (mention.length != 0 && isNaN(content[0])) {
+                                                    var listAdd = [];
+                                    
+                                                    for (const id of mention) {
+                                                        NDH.push(id);
+                                                        config.NDH.push(id);
+                                                        listAdd.push(`[👤] → Name: ${event.mentions[id]}\n[🔰] → Uid: ${id}`);
+                                                    };
+                                                    writeFileSync(configPath, JSON.stringify(config, null, 4), 'utf8');
+                                                    return api.sendMessage({body: getText("adminsupport", 1, `[👤] → Name: ${name}\n[🔰] → Uid: ${content[0]}`, moment.tz("Asia/Ho_Chi_Minh").format("DD/MM/YYYY || HH:mm:ss")),attachment: await streamURL(`https://graph.facebook.com/${content[0]}/picture?height=720&width=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`)},event.threadID)
+                                                }
+                                                else if (content.length != 0 && !isNaN(content[0])) {
+                                                    NDH.push(content[0]);
+                                                    config.NDH.push(content[0]);
+                                                    const name = (await Users.getData(content[0])).name
+                                                    writeFileSync(configPath, JSON.stringify(config, null, 4), 'utf8');
+                                                    return api.sendMessage({body: getText("adminsupport", 1, `[👤] → Name: ${name}\n[🔰] → Uid: ${content[0]}`, moment.tz("Asia/Ho_Chi_Minh").format("DD/MM/YYYY || HH:mm:ss")),attachment: await streamURL(`https://graph.facebook.com/${content[0]}/picture?height=720&width=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`)},event.threadID)
+                                                }
+                                                else return throwError(this.config.name, threadID, messageID);
+                                            }
+                                            case "resp": {
+                                              if (permssion != 3) return msg.reply("❎ Bạn không có quyền sử dụng lệnh này");
+                                              if (event.type == "message_reply") { content[0] = event.messageReply.senderID }
+                                              if (mentions.length != 0 && isNaN(content[0])) {
+                                                  const mention = Object.keys(mentions);
+                                                  var listAdd = [];
+                                  
+                                                  for (const id of mention) {
+                                                      const index = config.NDH.findIndex(item => item == id);
+                                                      NDH.splice(index, 1);
+                                                      config.NDH.splice(index, 1);
+                                                      listAdd.push(`[👤] → Name: ${event.mentions[id]}\n[🔰] → Uid: ${id}`);
+                                                  };
+                                  
+                                                  writeFileSync(configPath, JSON.stringify(config, null, 4), 'utf8');
+                                                  return api.sendMessage(getText("resp", mention.length, listAdd.join("\n").replace(/\@/g, ""), moment.tz("Asia/Ho_Chi_Minh").format("DD/MM/YYYY || HH:mm:ss")), threadID, messageID);
+                                              }
+                                              else if (content.length != 0 && !isNaN(content[0])) {
+                                                  const index = config.NDH.findIndex(item => item.toString() == content[0]);
+                                                  NDH.splice(index, 1);
+                                                  config.NDH.splice(index, 1);
+                                                  const name = (await Users.getData(content[0])).name
+                                                  writeFileSync(configPath, JSON.stringify(config, null, 4), 'utf8');
+                                                  return api.sendMessage(getText("resp", 1, `[👤] → Name: ${name}\n[🔰] → Uid: ${content[0]}`, moment.tz("Asia/Ho_Chi_Minh").format("DD/MM/YYYY || HH:mm:ss")), threadID, messageID);
+                                              }
+                                              else throwError(this.config.name, threadID, messageID);
+                                                                                 }                        
+        case 'box':
         case 'qtvonly': {
             const { resolve } = require("path");
             const pathData = resolve(__dirname, 'data', 'dataAdbox.json');

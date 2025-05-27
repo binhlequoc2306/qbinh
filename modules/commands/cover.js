@@ -1,37 +1,26 @@
 module.exports.config = {
-  name: "mp3",
-  version: "1.0.1",
-  hasPermssion: 0,
-  credits: "Vihoo", 
-  description: "no prefix",
-  commandCategory: "Người dùng",
-  usages: "đổi từ video thành âm thanh",
-  cooldowns: 5
+    name: "cover",
+    version: "1.0.0",
+    hasPermssion: 0,
+    credits: "araxy",
+    description: "reply video của bạn muốn chuyển từ dạng video sang mp4",
+    commandCategory: "Tiện ích",
+    usages: "reply",
+    cooldowns: 5
 };
-
-module.exports.run = async function() {}
-
-module.exports.handleEvent = async function ({ api, event, threads }) {
-  const { threadID, type, messageReply, messageID } = event;
-  const axios = require("axios");
-  const fs = require("fs");
-
-  if (type !== "message_reply" || messageReply.attachments.length == 0) return;
-  
-  const audio = messageReply.attachments[0].url;
-  var audioss = [];
-
-  async function getAttachments() {
-    const { data } = await axios.get(audio, { responseType: 'arraybuffer' });
-    fs.writeFileSync(__dirname + "/cache/vdtoau.m4a", Buffer.from(data, 'utf-8'));
-    audioss.push(fs.createReadStream(__dirname + "/cache/vdtoau.m4a"));
-    fs.unlinkSync(__dirname + "/cache/vdtoau.m4a");
-  }
-
-  const { body } = event;
-
-  if (body.toLowerCase() == "mp3") {
-    await getAttachments();
-    api.sendMessage({ body: "Đã chuyển đổi video thành âm thanh", attachment: audioss }, threadID, messageID);
-  }
+module.exports.run = async function ({ api, args, event, Currencies, Users }) {
+  try{
+ const axios = require("axios");
+    const fs = require("fs-extra");
+    const request = require("request");
+var audioss = []
+  var audio = args.join(" ") || event.messageReply.attachments[0].url;
+    var { data } = await axios.get(audio ,{  method: 'GET',  responseType: 'arraybuffer' });
+                fs.writeFileSync(__dirname + "/cache/vdtoau.m4a", Buffer.from(data, 'utf-8'));
+  audioss.push(fs.createReadStream(__dirname + "/cache/vdtoau.m4a"));
+    var msg = { body : "", attachment: audioss}
+  api.sendMessage(msg, event.threadID, event.messageID)
+} catch(e){
+    console.log(e)
+}
 }

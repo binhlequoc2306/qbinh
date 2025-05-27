@@ -1,24 +1,38 @@
-module.exports.config = {
+  module.exports.config = {
 	name: "lyrics",
-	version: "1.0.0",
+    version: "1.0.0", 
 	hasPermssion: 0,
-	credits: "Jukie~",
-	description: "Lyrics from nhaccuatui",
-	commandCategory: "Người dùng",
-	usages: "lyrics [name of the song]",
-	cooldowns: 5
+	credits: "manhG",
+	description: "công cụ tìm lời bài hát", 
+	commandCategory: "game",
+	usages: "[artist, title]",
+	cooldowns: 5,
+    dependencies: {
+        "lyrics-finder":""
+    }
 };
+module.exports.run = async function ({ api, args, event }) {
+   const { threadID, messageID } = event;
+  const axios = require('axios');
+	const request = require('request');
+	const fs = require("fs");
+    const lyricsFinder = require('lyrics-finder');
+    if (!args[0]) return api.sendMessage('Vui lòng trả lời tin nhắn này kèm theo tên bài hát bạn cần tìm lời bài hát !!',
+        threadID, (error, info) => {
+            global.client.handleReply.push({
+                name: "lyrics",
+                messageID: info.messageID,
+                author: event.senderID,
+            })
+        }, event.messageID)
+    let lyrics = await lyricsFinder(args.join(" ")) || "Không thể tìm thấy lời bài hát này !!";
+    return api.sendMessage(lyrics, threadID, messageID);
+}
 
-module.exports.run = async ({ api, event,args }) => {
-const axios = require("axios");
-let song = args.join(" ");
-const res = await axios.get(`https://api.popcat.xyz/lyrics?song=${song}`);
-var lyrics = res.data.lyrics;
-var name = res.data.title;
-var artist = res.data.artist;
-const image = res.data.image;
-const download = (await axios.get(image, {
-        responseType: "stream"
-    })).data;
-return api.sendMessage({body:`Title: ${name}\nArtist: ${artist}\n\nLyrics:\n${lyrics}`,attachment : download} ,  event.threadID, event.messageID)
+module.exports.handleReply = async function({ api, event, handleReply, getText }) {
+    const { threadID, messageID } = event
+    if (event.senderID != handleReply.author) return
+    const lyricsFinder = require('lyrics-finder');
+    let lyrics = await lyricsFinder(event.body) || "Not Found!";
+    return api.sendMessage(lyrics, threadID, messageID);
 }

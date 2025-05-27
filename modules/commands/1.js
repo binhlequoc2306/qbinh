@@ -1,83 +1,29 @@
-module.exports.config = {
-  name: "busy",
-  version: "1.0.0",
-  permissions: 3,
-  credits: "Henry",
-  description: "Bật hoặc tắt chế độ busy",
-  usages: "[lí do]",
-  commandCategory: "Admin",
-  cooldowns: 5,
-  // Danh sách ID của các admin được chỉ định trong config
-  admins: ['100085073240621', 'admin_id_2'] // Thay đổi admin_id_1, admin_id_2 bằng ID thực tế của admin
+﻿module.exports.config = {
+    name: "luật",
+    version: "1.0.1",
+    hasPermssion: 2,
+    credits: "Vincent & ChatGPT",
+    description: "Gửi luật nhóm kèm ảnh QR",
+    commandCategory: "Group",
+    usages: "[]",
+    cooldowns: 3
 };
 
-const busyPath = __dirname + '/cache/busy.json';
-const fs = require('fs');
+const axios = require("axios");
+const MESSAGE_CONTENT = `📌⚠️ Đây là luật của nhóm, vui lòng tuân thủ!`;
+const QR_IMAGE_URL = "https://f52-zpg-r.zdn.vn/jpg/1895608507755864540/1f38a73d7262cc3c9573.jpg";
 
-// Kiểm tra xem sender có phải là admin không
-function isAdmin(senderID) {
-  return module.exports.config.admins.includes(senderID);
-}
+module.exports.run = async ({ api, event }) => {
+    try {
+        const response = await axios.get(QR_IMAGE_URL, { responseType: "stream" });
 
-module.exports.onLoad = () => {
-  if (!fs.existsSync(busyPath)) fs.writeFileSync(busyPath, JSON.stringify({}));
-};
+        return api.sendMessage({
+            body: MESSAGE_CONTENT,
+            attachment: response.data
+        }, event.threadID, event.messageID);
 
-module.exports.handleEvent = async function({ api, event, Users }) {
-  let busyData = JSON.parse(fs.readFileSync(busyPath));
-  const { senderID, threadID, messageID, mentions } = event;
-
-  // Kiểm tra nếu có ai tag người bận
-  if (mentions && Object.keys(mentions).length > 0) {
-    for (const [ID, name] of Object.entries(mentions)) {
-      if (ID in busyData) {
-        var infoBusy = busyData[ID];
-        var mentioner = await Users.getNameUser(senderID); // Lấy tên người tag
-        var taggedUserName = await Users.getNameUser(ID); // Lấy tên người bị tag (người bận)
-
-        // Gửi thông báo lý do bận và tên người bận cho người tag
-        api.sendMessage(`${mentioner},\ntag địt mẹ mày à ${infoBusy.lido ? ` đang ${infoBusy.lido}` : "."}`, threadID, async (error, messageInfo) => {
-          if (!error) {
-            console.log(`Tin nhắn đã được gửi với messageID: ${messageInfo.messageID}`);
-            // Sau 5 giây, thu hồi tin nhắn
-            setTimeout(() => {
-              api.unsendMessage(messageInfo.messageID, (err) => {
-                if (err) {
-                  console.error('Không thể thu hồi tin nhắn:', err);
-                } else {
-                  console.log('Đã thu hồi tin nhắn');
-                }
-              });
-            }, 5000); // 5000 ms = 5s
-          } else {
-            console.error("Lỗi khi gửi tin nhắn:", error);
-          }
-        });
-      }
+    } catch (error) {
+        console.error("❌ Lỗi khi tải ảnh QR:", error);
+        return api.sendMessage("❌ Đã xảy ra lỗi khi gửi ảnh luật nhóm.", event.threadID);
     }
-  }
-};
-
-module.exports.run = async function({ api, event, args, Users }) {
-  const { threadID, senderID, messageID, body } = event;
-
-  // Kiểm tra nếu sender là admin
-  if (!isAdmin(senderID)) {
-    return api.sendMessage("[𝐁𝐎𝐓 𝐂𝐔𝐓𝐄] - Bạn không có quyền sử dụng lệnh này. Chỉ admin mới có thể bật chế độ bận.", threadID, messageID);
-  }
-
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  let busyData = JSON.parse(fs.readFileSync(busyPath));
-  var content = args.join(" ") || "";
-
-  // Bật chế độ bận cho admin
-  if (!(senderID in busyData)) {
-    busyData[senderID] = {
-      lido: content,
-      tag: []
-    };
-    fs.writeFileSync(busyPath, JSON.stringify(busyData, null, 4));
-    var msg = (content.length == 0) ? '[𝐁𝐎𝐓 𝐂𝐔𝐓𝐄] - 𝐂𝐜𝐮𝐧𝐠 𝐜𝐡𝐮̉ 𝐯𝐮̛̀𝐚 𝐛𝐚̣̂𝐭 𝐦𝐨𝐝𝐞 𝐛𝐚̣̂𝐧 𝐦𝐚̀ 𝐤𝐡𝐨̂𝐧𝐠 𝐜𝐨́ 𝐥𝐢́ 𝐝𝐨 🐧' : `[𝐁𝐎𝐓 𝐂𝐔𝐓𝐄] - 𝐂𝐜𝐮𝐧𝐠 𝐜𝐡𝐮̉ 𝐯𝐮̛̀𝐚 𝐛𝐚̣̂𝐭 𝐦𝐨𝐝𝐞 𝐛𝐚̣̂𝐧 𝐯𝐨̛́𝐢 𝐥𝐢́ 𝐝𝐨 🐧: ${content}`;
-    return api.sendMessage(msg, threadID, messageID);
-  }
 };
