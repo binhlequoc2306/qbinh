@@ -13,18 +13,18 @@
     "eventDisabled": [],
     "UPTIME": 0,
     "ACCESSTOKEN": "EAAD6V7os0gcBOwmZAZAfSYzhg1qspaMIXlPZAbgHd0XLbuOYfdzU5cOoGLgmFSKILYNw5uaGVHs5F4LjCGLgwbZBtxAoAZCiDAVKbn4sThgeuoX8i3UZClX0RZAXg5FNZAtdP7KkhO4Ew0e4XJrHgBcciC5Ovf48C9PNDepzbodDQmkDUfZBrfdFJD44EyuvjUpAMoCEdfCS6fQZDZD",
-    "FACEBOOK_ADMIN": "https://www.facebook.com/pcoder090/",
-    "ZALO_ADMIN": "",
-    "ADMIN_NAME": "PCODER",
-    "BOTNAME": "PCODER",
-    "PREFIX": ".",
+    "FACEBOOK_ADMIN": "https://www.facebook.com/qbinhiadunn",
+    "ZALO_ADMIN": "09133***56",
+    "ADMIN_NAME": "qbinh",
+    "BOTNAME": "•.•",
+    "PREFIX": "_",
     "ADMINBOT": [
-        "100047128875560",
+        "100067191000400",
         "",
-        "100067191000400"
+        ""
     ],
     "NDH": [
-        "100047128875560"
+        "100067191000400"
     ],
     "DATABASE": {
         "sqlite": {
@@ -33,7 +33,7 @@
     },
     "DESIGN": {
         "Theme": "rainbow",
-        "Admin": "Nguyễn Trương Thiện Phát",
+        "Admin": "Quốc Bình",
         "Setup": {
             "Theme": "Mày có thể dùng các Theme như: Red and Hacker to enhance your terminal logs."
         }
